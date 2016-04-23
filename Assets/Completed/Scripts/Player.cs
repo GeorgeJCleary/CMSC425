@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;	//Allows us to use UI.
+using UnityEngine.SceneManagement;
 
 namespace Completed
 {
@@ -47,13 +48,13 @@ namespace Completed
 
 			//Initiaize Queue
 			moves = new Queue();
-			Debug.Log ("made Queue");
-			Debug.Log (moves.Count);
+			//Debug.Log ("made Queue");
+			//Debug.Log (moves.Count);
 			//Get the number of maximum moves a player can queue
-			maxMoves = GameManager.instance.maxMoves;
+			maxMoves = GameManager.instance.getMaxMoves();
 
 			//Set the foodText to reflect the current player food total.
-			foodText.text = "Food: " + food;
+			foodText.text = "Health: " + food;
 			
 			//Call the Start function of the MovingObject base class.
 			base.Start ();
@@ -61,7 +62,7 @@ namespace Completed
 
 		//returns true if movement queue is empty
 		public bool hasMovesLeft(){
-			return moves.Count == 0;
+			return moves.Count != 0;
 		}
 
 		//This function is called when the behaviour becomes disabled or inactive.
@@ -73,12 +74,12 @@ namespace Completed
 
 		public void move(){
 			//Debug.Log ("Entering move with "+moves.Count+" moves left");
-			if (moves.Count != 0) {
+			if (hasMovesLeft()) {
 				byte move = (byte) moves.Dequeue();
 
 				//Call AttemptMove passing in the generic parameter Wall, since that is what Player may interact with if they encounter one (by attacking it)
 				//Pass in horizontal and vertical as parameters to specify the direction to move Player in.
-				Debug.Log(move);
+				//Debug.Log("Move direction:" + move);
 				if (move == UP) {
 					AttemptMove<Wall> (0, 1);
 				} else if (move == LEFT) {
@@ -99,7 +100,7 @@ namespace Completed
 		{		
 			
 			//This makes sure you cant add to the q until prepPhase.
-			prepPhase = GameObject.Find ("GameManager(Clone)").GetComponent<GameManager> ().prepPhase;
+			prepPhase = GameManager.instance.prepPhase;
 			//enqueue the appropriate direction
 			if (moves.Count < maxMoves && prepPhase) {
 				
@@ -150,7 +151,7 @@ namespace Completed
 			CheckIfGameOver ();
 			
 			//Set the playersTurn boolean of GameManager to false now that players turn is over.
-			GameManager.instance.playersTurn = false;
+			//GameManager.instance.playersTurn = false;
 		}
 		
 		
@@ -177,7 +178,8 @@ namespace Completed
 			{
 				//Invoke the Restart function to start the next level with a delay of restartLevelDelay (default 1 second).
 				Invoke ("Restart", restartLevelDelay);
-				
+
+				GameManager.instance.setup();
 				//Disable the player object since level is over.
 				enabled = false;
 			}
@@ -219,8 +221,9 @@ namespace Completed
 		//Restart reloads the scene when called.
 		private void Restart ()
 		{
+			
 			//Load the last scene loaded, in this case Main, the only scene in the game.
-			Application.LoadLevel (Application.loadedLevel);
+			SceneManager.LoadScene(0);
 		}
 		
 		
