@@ -9,21 +9,28 @@ namespace Completed
 	public class GameManager : MonoBehaviour
 	{
 		public float levelStartDelay = 2f;						//Time to wait before starting level, in seconds.
+		public int maxMoves = 5;								//Maximum number of moves
 		public float turnDelay = 0.1f;							//Delay between each Player turn.
+		public float prepInteval = 5f;							//Movement preparation interval in seconds
 		public int playerFoodPoints = 100;						//Starting value for Player food points.
 		public static GameManager instance = null;				//Static instance of GameManager which allows it to be accessed by any other script.
 		[HideInInspector] public bool playersTurn = true;		//Boolean to check if it's players turn, hidden in inspector but public.
-		
-		
+
 		private Text levelText;									//Text to display current level number.
 		private GameObject levelImage;							//Image to block out level as levels are being set up, background for levelText.
 		private BoardManager boardScript;						//Store a reference to our BoardManager which will set up the level.
+		private GameObject playerobject;
+		public Player player;
 		private int level = 1;									//Current level number, expressed in game as "Day 1".
 		private List<Enemy> enemies;							//List of all Enemy units, used to issue them move commands.
 		private bool enemiesMoving;								//Boolean to check if enemies are moving.
 		private bool doingSetup = true;							//Boolean to check if we're setting up board, prevent Player from moving during setup.
-		
-		
+		public bool prepPhase = true;
+
+
+		public Slider turnTimer;
+		private float timer = 0.0F;
+
 		
 		//Awake is always called before any Start functions
 		void Awake()
@@ -42,17 +49,74 @@ namespace Completed
 			
 			//Sets this to not be destroyed when reloading scene
 			DontDestroyOnLoad(gameObject);
-			
+
+			turnTimer =  GameObject.Find ("TurnTimer").GetComponent<Slider>();
+			turnTimer.maxValue = prepInteval;
+
 			//Assign enemies to a new List of Enemy objects.
 			enemies = new List<Enemy>();
 			
 			//Get a component reference to the attached BoardManager script
 			boardScript = GetComponent<BoardManager>();
-			
+
+
 			//Call the InitGame function to initialize the first level 
 			InitGame();
+
+
 		}
-		
+
+		//Handles the changes between the planning and movement phases
+		IEnumerator phaseShifter(){
+			//yield return new WaitForSeconds (2);
+			while (true) {
+				Debug.Log ("entering prep phase");
+
+				//start timer on the first pass of this loop
+				if (prepPhase) {
+					StartCoroutine (startTimer(prepInteval));
+				}
+				yield return new WaitForSeconds (prepInteval);
+				if (prepPhase) {
+					//TODO add timer
+					prepPhase = false;
+					StartCoroutine ("processMovements");
+				}
+
+			}
+		}
+
+		//Processes the movements during the movement phase
+		IEnumerator processMovements(){
+			Debug.Log ("entering movement phase");
+			for (int i = 0; i < maxMoves; i++) {
+				//move player
+				player.move ();
+
+				StartCoroutine("MoveEnemies");
+				yield return new WaitForSeconds(1);
+			}
+			prepPhase = true;
+			StartCoroutine (startTimer(prepInteval));
+		}
+
+		IEnumerator startTimer(float secondsLeft) {
+			turnTimer.gameObject.SetActive (true); 
+
+			turnTimer.value = secondsLeft;
+
+			while (secondsLeft > 0f) {
+				secondsLeft -= Time.deltaTime;
+
+				turnTimer.value = Mathf.MoveTowards(turnTimer.value, secondsLeft, 0.3F);
+
+				yield return null;
+			}
+
+			Debug.Log("Countdown finished!");
+		}
+			
+
 		//This is called each time a scene is loaded.
 		void OnLevelWasLoaded(int index)
 		{
@@ -67,6 +131,15 @@ namespace Completed
 		{
 			//While doingSetup is true the player can't move, prevent player from moving while title card is up.
 			doingSetup = true;
+
+			playerobject = GameObject.Find("Player");
+			player = playerobject.GetComponent<Player> ();
+
+			turnTimer =  GameObject.Find ("TurnTimer").GetComponent<Slider>();
+			turnTimer.maxValue = prepInteval;
+			timer = prepInteval;
+			turnTimer.gameObject.SetActive (false);
+
 			
 			//Get a reference to our image LevelImage by finding it by name.
 			levelImage = GameObject.Find("LevelImage");
@@ -88,7 +161,11 @@ namespace Completed
 			
 			//Call the SetupScene function of the BoardManager script, pass it current level number.
 			boardScript.SetupScene(level);
-			
+
+
+			//Start the phase changing routine
+			StartCoroutine("phaseShifter");
+
 		}
 		
 		
@@ -100,19 +177,12 @@ namespace Completed
 			
 			//Set doingSetup to false allowing player to move again.
 			doingSetup = false;
+			prepPhase = true;
 		}
 		
 		//Update is called every frame.
 		void Update()
 		{
-			//Check that playersTurn or enemiesMoving or doingSetup are not currently true.
-			if(playersTurn || enemiesMoving || doingSetup)
-				
-				//If any of these are true, return and do not start MoveEnemies.
-				return;
-			
-			//Start moving enemies.
-			StartCoroutine (MoveEnemies ());
 		}
 		
 		//Call this to add the passed in Enemy to the List of Enemy objects.
@@ -162,7 +232,7 @@ namespace Completed
 				yield return new WaitForSeconds(enemies[i].moveTime);
 			}
 			//Once Enemies are done moving, set playersTurn to true so player can move.
-			playersTurn = true;
+			//playersTurn = true;
 			
 			//Enemies are done moving, set enemiesMoving to false.
 			enemiesMoving = false;

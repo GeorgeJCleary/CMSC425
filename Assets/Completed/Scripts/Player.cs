@@ -5,7 +5,7 @@ using UnityEngine.UI;	//Allows us to use UI.
 namespace Completed
 {
 	//Player inherits from MovingObject, our base class for objects that can move, Enemy also inherits from this.
-	public class Player : MovingObject
+	public class Player: MovingObject
 	{
 		public float restartLevelDelay = 1f;		//Delay time in seconds to restart level.
 		public int pointsPerFood = 10;				//Number of points to add to player food points when picking up a food object.
@@ -19,107 +19,107 @@ namespace Completed
 		public AudioClip drinkSound1;				//1 of 2 Audio clips to play when player collects a soda object.
 		public AudioClip drinkSound2;				//2 of 2 Audio clips to play when player collects a soda object.
 		public AudioClip gameOverSound;				//Audio clip to play when player dies.
-		
+
+		private int maxMoves;
 		private Animator animator;					//Used to store a reference to the Player's animator component.
 		private int food;							//Used to store player food points total during level.
-		private Vector2 touchOrigin = -Vector2.one;	//Used to store location of screen touch origin for mobile controls.
-		
+		private Queue moves;					//Movement Queue used to store movements to executed later
+
+
+		private bool prepPhase;
+
+		private readonly byte UP = 0;			//Un-edittable bytes indicating direction on stack
+		private readonly byte LEFT = 1;			//			0
+		private readonly byte DOWN = 2;			//		1		3
+		private readonly byte RIGHT = 3;		//			2
+
 		
 		//Start overrides the Start function of MovingObject
 		protected override void Start ()
 		{
 			//Get a component reference to the Player's animator component
 			animator = GetComponent<Animator>();
-			
+
 			//Get the current food point total stored in GameManager.instance between levels.
 			food = GameManager.instance.playerFoodPoints;
-			
+
+;
+
+			//Initiaize Queue
+			moves = new Queue();
+			Debug.Log ("made Queue");
+			Debug.Log (moves.Count);
+			//Get the number of maximum moves a player can queue
+			maxMoves = GameManager.instance.maxMoves;
+
 			//Set the foodText to reflect the current player food total.
 			foodText.text = "Food: " + food;
 			
 			//Call the Start function of the MovingObject base class.
 			base.Start ();
 		}
-		
-		
+
+		//returns true if movement queue is empty
+		public bool hasMovesLeft(){
+			return moves.Count == 0;
+		}
+
 		//This function is called when the behaviour becomes disabled or inactive.
 		private void OnDisable ()
 		{
 			//When Player object is disabled, store the current local food total in the GameManager so it can be re-loaded in next level.
 			GameManager.instance.playerFoodPoints = food;
 		}
-		
-		
-		private void Update ()
-		{
-			//If it's not the player's turn, exit the function.
-			if(!GameManager.instance.playersTurn) return;
-			
-			int horizontal = 0;  	//Used to store the horizontal move direction.
-			int vertical = 0;		//Used to store the vertical move direction.
-			
-			//Check if we are running either in the Unity editor or in a standalone build.
-			#if UNITY_STANDALONE || UNITY_WEBPLAYER
-			
-			//Get input from the input manager, round it to an integer and store in horizontal to set x axis move direction
-			horizontal = (int) (Input.GetAxisRaw ("Horizontal"));
-			
-			//Get input from the input manager, round it to an integer and store in vertical to set y axis move direction
-			vertical = (int) (Input.GetAxisRaw ("Vertical"));
-			
-			//Check if moving horizontally, if so set vertical to zero.
-			if(horizontal != 0)
-			{
-				vertical = 0;
-			}
-			//Check if we are running on iOS, Android, Windows Phone 8 or Unity iPhone
-			#elif UNITY_IOS || UNITY_ANDROID || UNITY_WP8 || UNITY_IPHONE
-			
-			//Check if Input has registered more than zero touches
-			if (Input.touchCount > 0)
-			{
-				//Store the first touch detected.
-				Touch myTouch = Input.touches[0];
-				
-				//Check if the phase of that touch equals Began
-				if (myTouch.phase == TouchPhase.Began)
-				{
-					//If so, set touchOrigin to the position of that touch
-					touchOrigin = myTouch.position;
-				}
-				
-				//If the touch phase is not Began, and instead is equal to Ended and the x of touchOrigin is greater or equal to zero:
-				else if (myTouch.phase == TouchPhase.Ended && touchOrigin.x >= 0)
-				{
-					//Set touchEnd to equal the position of this touch
-					Vector2 touchEnd = myTouch.position;
-					
-					//Calculate the difference between the beginning and end of the touch on the x axis.
-					float x = touchEnd.x - touchOrigin.x;
-					
-					//Calculate the difference between the beginning and end of the touch on the y axis.
-					float y = touchEnd.y - touchOrigin.y;
-					
-					//Set touchOrigin.x to -1 so that our else if statement will evaluate false and not repeat immediately.
-					touchOrigin.x = -1;
-					
-					//Check if the difference along the x axis is greater than the difference along the y axis.
-					if (Mathf.Abs(x) > Mathf.Abs(y))
-						//If x is greater than zero, set horizontal to 1, otherwise set it to -1
-						horizontal = x > 0 ? 1 : -1;
-					else
-						//If y is greater than zero, set horizontal to 1, otherwise set it to -1
-						vertical = y > 0 ? 1 : -1;
-				}
-			}
-			
-			#endif //End of mobile platform dependendent compilation section started above with #elif
-			//Check if we have a non-zero value for horizontal or vertical
-			if(horizontal != 0 || vertical != 0)
-			{
+
+		public void move(){
+			//Debug.Log ("Entering move with "+moves.Count+" moves left");
+			if (moves.Count != 0) {
+				byte move = (byte) moves.Dequeue();
+
 				//Call AttemptMove passing in the generic parameter Wall, since that is what Player may interact with if they encounter one (by attacking it)
 				//Pass in horizontal and vertical as parameters to specify the direction to move Player in.
-				AttemptMove<Wall> (horizontal, vertical);
+				Debug.Log(move);
+				if (move == UP) {
+					AttemptMove<Wall> (0, 1);
+				} else if (move == LEFT) {
+					AttemptMove<Wall> (-1, 0);
+				}else if (move == DOWN){
+					AttemptMove<Wall> (0, -1);
+				}else if (move == RIGHT){
+					AttemptMove<Wall> (1, 0);
+				}else{
+					Debug.Log("Something other that a direction was queued");
+				}
+					
+
+			}
+		}
+
+		private void Update ()
+		{		
+			
+			//This makes sure you cant add to the q until prepPhase.
+			prepPhase = GameObject.Find ("GameManager(Clone)").GetComponent<GameManager> ().prepPhase;
+			//enqueue the appropriate direction
+			if (moves.Count < maxMoves && prepPhase) {
+				
+				if (Input.GetKeyDown (KeyCode.UpArrow)) {
+					moves.Enqueue (UP);
+					Debug.Log ("UP Queued");
+				} 
+				if (Input.GetKeyDown (KeyCode.LeftArrow)) {
+					moves.Enqueue (LEFT);
+					Debug.Log ("LEFT Queued");
+				}
+				if (Input.GetKeyDown (KeyCode.DownArrow)) {
+					moves.Enqueue (DOWN);
+					Debug.Log ("DOWN Queued");
+				} 
+				if (Input.GetKeyDown (KeyCode.RightArrow)) {
+					moves.Enqueue (RIGHT);
+					Debug.Log ("RIGHT Queued");
+				} 
+
 			}
 		}
 		
@@ -128,10 +128,10 @@ namespace Completed
 		protected override void AttemptMove <T> (int xDir, int yDir)
 		{
 			//Every time player moves, subtract from food points total.
-			food--;
+			//food--;
 			
 			//Update food text display to reflect current score.
-			foodText.text = "Food: " + food;
+			foodText.text = "Health: " + food;
 			
 			//Call the AttemptMove method of the base class, passing in the component T (in this case Wall) and x and y direction to move.
 			base.AttemptMove <T> (xDir, yDir);
@@ -189,7 +189,7 @@ namespace Completed
 				food += pointsPerFood;
 				
 				//Update foodText to represent current total and notify player that they gained points
-				foodText.text = "+" + pointsPerFood + " Food: " + food;
+				foodText.text = "+" + pointsPerFood + " Health: " + food;
 				
 				//Call the RandomizeSfx function of SoundManager and pass in two eating sounds to choose between to play the eating sound effect.
 				SoundManager.instance.RandomizeSfx (eatSound1, eatSound2);
@@ -205,7 +205,7 @@ namespace Completed
 				food += pointsPerSoda;
 				
 				//Update foodText to represent current total and notify player that they gained points
-				foodText.text = "+" + pointsPerSoda + " Food: " + food;
+				foodText.text = "+" + pointsPerSoda + " Health: " + food;
 				
 				//Call the RandomizeSfx function of SoundManager and pass in two drinking sounds to choose between to play the drinking sound effect.
 				SoundManager.instance.RandomizeSfx (drinkSound1, drinkSound2);
@@ -235,7 +235,7 @@ namespace Completed
 			food -= loss;
 			
 			//Update the food display with the new total.
-			foodText.text = "-"+ loss + " Food: " + food;
+			foodText.text = "-"+ loss + " Health: " + food;
 			
 			//Check to see if game has ended.
 			CheckIfGameOver ();
