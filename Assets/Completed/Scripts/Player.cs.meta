@@ -1,8 +1,23 @@
 fileFormatVersion: 2
 guid: 16e3f930239ae4562865b7c0918b8677
+timeCreated: 1461484365
+licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - foodText: {instanceID: 0}
+  - moveSound1: {instanceID: 0}
+  - moveSound2: {instanceID: 0}
+  - eatSound1: {instanceID: 0}
+  - eatSound2: {instanceID: 0}
+  - drinkSound1: {instanceID: 0}
+  - drinkSound2: {instanceID: 0}
+  - gameOverSound: {instanceID: 0}
+  - moveSinglePanel: {fileID: 11442840, guid: 295be784d24e3634aa39061cfcc8053d, type: 2}
+  - upArrow: {instanceID: 0}
+  - downArrow: {instanceID: 0}
+  - leftArrow: {instanceID: 0}
+  - rightArrow: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

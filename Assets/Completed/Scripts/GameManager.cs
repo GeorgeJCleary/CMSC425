@@ -8,14 +8,22 @@ namespace Completed
 	
 	public class GameManager : MonoBehaviour
 	{
+
+		//variable we can edit to change game experience
+		private float thinkingTime = 4f;	 					// thinking time between the level start and first move countdown
+		private float firstTurnExtraTime = 4f;					// first Turn Extra Time for countdown timer of the first turn
+
 		private float levelStartDelay = 2f;						//Time to wait before starting level, in seconds.
 		private int maxMoves = 7;								//Maximum number of moves
-		//public float turnDelay = 0.1f;							//Delay between each Player turn.
-		private float prepInteval = 5f;							//Movement preparation interval in seconds
-		private float thinkingTime = 2f;	
+		//public float turnDelay = 0.1f;						//Delay between each Player turn.
+		private float prepInteval = 5f;							//Movement preparation interval in seconds	
 		public int playerFoodPoints = 100;						//Starting value for Player food points.
+
+
 		public static GameManager instance = null;				//Static instance of GameManager which allows it to be accessed by any other script.
 		[HideInInspector] public bool playersTurn = true;		//Boolean to check if it's players turn, hidden in inspector but public.
+
+		private bool firstTurn = true;							// true if first turn
 
 		private Text levelText;									//Text to display current level number.
 		private GameObject levelImage;							//Image to block out level as levels are being set up, background for levelText.
@@ -23,11 +31,14 @@ namespace Completed
 		private GameObject playerobject;
 		public Player player;
 		private int level = 1;									//Current level number, expressed in game as "Day 1".
+
 		private List<Enemy> enemies;							//List of all Enemy units, used to issue them move commands.
 		private bool enemiesMoving;								//Boolean to check if enemies are moving.
 		private bool doingSetup = true;							//Boolean to check if we're setting up board, prevent Player from moving during setup.
 		public bool prepPhase = false;
 
+		private GameObject[] moveBar;
+		private int leveltracker = 0;
 
 		public Slider turnTimer;
 		private float timer = 0.0F;
@@ -36,6 +47,7 @@ namespace Completed
 		//Awake is always called before any Start functions
 		void Awake()
 		{
+			
 			doingSetup = true;
 			//Check if instance already exists
 			if (instance == null)
@@ -67,6 +79,9 @@ namespace Completed
 			//Call the InitGame function to initialize the first level 
 			InitGame();
 
+			// it is the first turn of this level
+			firstTurn = true;
+
 			//Start the phase changing routine
 			StartCoroutine("phaseShifter");
 
@@ -75,18 +90,26 @@ namespace Completed
 		//Handles the changes between the planning and movement phases
 		IEnumerator phaseShifter(){
 			while (true) {
-				Debug.Log ("checking if doing setup");
+				//Debug.Log ("checking if doing setup");
 				if (doingSetup) {
+					
 					Debug.Log ("Think about your moves for " + thinkingTime + " seconds while level sets up.");
+
+
 					yield return new WaitForSeconds (thinkingTime);
 				} else {
-
 				
-					StartCoroutine (startTimer (prepInteval));
+					//give more time for the first turn
+					if (firstTurn) {
+						firstTurn = false;
+						StartCoroutine (startTimer (prepInteval+ firstTurnExtraTime));
+						yield return new WaitForSeconds (prepInteval + firstTurnExtraTime +  1);
+					} else {
+						StartCoroutine (startTimer (prepInteval));
+						yield return new WaitForSeconds (prepInteval + 1);
+					}
+					//Debug.Log ("entering prep phase");
 
-					Debug.Log ("entering prep phase");
-
-					yield return new WaitForSeconds (prepInteval + 1);
 
 					if (prepPhase) {
 						//TODO add timer
@@ -102,7 +125,7 @@ namespace Completed
 
 		//Processes the movements during the movement phase
 		IEnumerator processMovements(){
-			Debug.Log ("entering movement phase");
+			//Debug.Log ("entering movement phase");
 			for (int i = 0; i < maxMoves; i++) {
 				//move player
 				player.move ();
@@ -112,14 +135,15 @@ namespace Completed
 				yield return new WaitForSeconds (1);
 			}
 
-			Debug.Log ("MOVING IS DONE");
+			//Debug.Log ("MOVING IS DONE");
 			prepPhase = true;
 
 		}
 
 		IEnumerator startTimer(float secondsLeft) {
-			Debug.Log("Countdown started for " + secondsLeft + " seconds.");
-			turnTimer.gameObject.SetActive (true); 
+			//Debug.Log("Countdown started for " + secondsLeft + " seconds.");
+			turnTimer.maxValue = secondsLeft;
+
 			turnTimer.value = secondsLeft;
 
 			while (secondsLeft > 0f) {
@@ -130,7 +154,7 @@ namespace Completed
 				yield return null;
 			}
 
-			Debug.Log("Countdown finished!");
+			//Debug.Log("Countdown finished!");
 		}
 			
 		public int getMaxMoves(){
@@ -202,16 +226,28 @@ namespace Completed
 			doingSetup = false;
 			prepPhase = true;
 
-			StopCoroutine ("processMovements");
-			StopCoroutine ("MoveEnemies");
-			StopCoroutine ("startTimer");
-
-
 		}
 		
 		//Update is called every frame.
 		void Update()
 		{
+			//set gameobjects in the ui to visible after setup is done for the first time for the level
+			if (leveltracker != level && !doingSetup) {
+
+				turnTimer.gameObject.SetActive (true); 
+				turnTimer.value = turnTimer.maxValue;
+
+				leveltracker = level;
+
+				moveBar = GameObject.FindGameObjectsWithTag ("MoveIcon");
+
+				Debug.Log ("moveBar size :  " +  moveBar.Length);
+
+
+				for(int i = 0 ; i < moveBar.Length; i ++) {
+					moveBar[i].GetComponent<Image>().enabled=true;
+				}
+			}
 		}
 		
 		//Call this to add the passed in Enemy to the List of Enemy objects.
@@ -260,7 +296,7 @@ namespace Completed
 			//Loop through List of Enemy objects.
 			for (int i = 0; i < enemies.Count; i++)
 			{
-				Debug.Log("Moving enemy: "+ i);
+				//Debug.Log("Moving enemy: "+ i);
 				//Call the MoveEnemy function of Enemy at index i in the enemies List.
 				enemies[i].MoveEnemy ();
 				

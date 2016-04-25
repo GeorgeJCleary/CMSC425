@@ -21,11 +21,23 @@ namespace Completed
 		public AudioClip drinkSound2;				//2 of 2 Audio clips to play when player collects a soda object.
 		public AudioClip gameOverSound;				//Audio clip to play when player dies.
 
+
+		public Image moveSinglePanel;
+
+		public Sprite upArrow;
+		public Sprite downArrow;
+		public Sprite leftArrow;
+		public Sprite rightArrow;
+		public Sprite moveBorder;
+
+
 		private int maxMoves;
 		private Animator animator;					//Used to store a reference to the Player's animator component.
 		private int food;							//Used to store player food points total during level.
 		private Queue moves;					//Movement Queue used to store movements to executed later
 
+		private Queue moveBarQ;
+		private GameObject[] moveBar;
 
 		private bool prepPhase;
 
@@ -46,18 +58,78 @@ namespace Completed
 
 ;
 
-			//Initiaize Queue
+			//Initiaize Queues
 			moves = new Queue();
+			moveBarQ = new Queue();
+
 			//Debug.Log ("made Queue");
 			//Debug.Log (moves.Count);
 			//Get the number of maximum moves a player can queue
 			maxMoves = GameManager.instance.getMaxMoves();
+
+			//make ui bar with max move slots
+			makeMoveBar(maxMoves);
+
+			moveBar = GameObject.FindGameObjectsWithTag ("MoveIcon");
 
 			//Set the foodText to reflect the current player food total.
 			foodText.text = "Health: " + food;
 			
 			//Call the Start function of the MovingObject base class.
 			base.Start ();
+		}
+
+		private void makeMoveBar(int moves){
+			GameObject panel = GameObject.Find ("Panel");
+			for (int i = 0; i < moves; i++) {
+				Image m = (Image) Instantiate(moveSinglePanel);
+
+				//m.rectTransform.localPosition = new Vector2(275 + i*32, 12);
+
+				m.rectTransform.SetParent (panel.GetComponent<RectTransform>());
+
+				m.transform.parent = panel.transform; 
+
+				m.rectTransform.sizeDelta = new Vector2(32, 32);
+				//m.rectTransform.anchoredPosition = Vector2.one;
+				m.transform.localScale = Vector2.one;
+				m.rectTransform.localPosition = new Vector2(237 + i*40, 20);
+
+
+				//m.rectTransform.sizeDelta = new Vector2(32, 32);
+
+				//m.transform.parent = panel.transform; 
+
+				m.name = "moveIcon" + i;
+				m.gameObject.name = "moveIcon" + i;
+
+				m.tag = "MoveIcon";
+				m.gameObject.tag = "MoveIcon";
+
+
+
+				//change picture to empty pic
+				//m.sprite = moveBorder;
+
+				m.enabled = false;
+
+				//Debug.Log("Making movepanel " + i);
+			}
+		}
+
+		private void setMove(GameObject moveTile, byte dir){
+			Image i = moveTile.GetComponent<Image>();
+			if (dir == UP) {
+				i.sprite = upArrow;
+			}else if (dir == LEFT) {
+				i.sprite = leftArrow;
+			}else if (dir == DOWN){
+				i.sprite = downArrow;
+			}else if (dir == RIGHT){
+				i.sprite = rightArrow;
+			}else{
+				Debug.Log("Something other that a direction needs to go in the movetile");
+			}
 		}
 
 		//returns true if movement queue is empty
@@ -76,6 +148,10 @@ namespace Completed
 			//Debug.Log ("Entering move with "+moves.Count+" moves left");
 			if (hasMovesLeft()) {
 				byte move = (byte) moves.Dequeue();
+
+				//change picture for this move back to empty
+				GameObject g = (GameObject)moveBarQ.Dequeue ();
+				g.GetComponent<Image> ().sprite = moveBorder;
 
 				//Call AttemptMove passing in the generic parameter Wall, since that is what Player may interact with if they encounter one (by attacking it)
 				//Pass in horizontal and vertical as parameters to specify the direction to move Player in.
@@ -102,24 +178,33 @@ namespace Completed
 			//This makes sure you cant add to the q until prepPhase.
 			prepPhase = GameManager.instance.prepPhase;
 			//enqueue the appropriate direction
-			if (moves.Count < maxMoves && prepPhase) {
+			int count = moves.Count;
+			if (count < maxMoves && prepPhase) {
 				
 				if (Input.GetKeyDown (KeyCode.UpArrow)) {
 					moves.Enqueue (UP);
-					Debug.Log ("UP Queued");
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],UP);
+					//Debug.Log ("UP Queued");
 				} 
 				if (Input.GetKeyDown (KeyCode.LeftArrow)) {
 					moves.Enqueue (LEFT);
-					Debug.Log ("LEFT Queued");
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],LEFT);
+					//Debug.Log ("LEFT Queued");
 				}
 				if (Input.GetKeyDown (KeyCode.DownArrow)) {
 					moves.Enqueue (DOWN);
-					Debug.Log ("DOWN Queued");
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],DOWN);
+					//Debug.Log ("DOWN Queued");
 				} 
 				if (Input.GetKeyDown (KeyCode.RightArrow)) {
 					moves.Enqueue (RIGHT);
-					Debug.Log ("RIGHT Queued");
-				} 
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],RIGHT);
+					//Debug.Log ("RIGHT Queued");
+				}
 
 			}
 		}
