@@ -21,6 +21,7 @@ namespace Completed
 		public AudioClip drinkSound2;				//2 of 2 Audio clips to play when player collects a soda object.
 		public AudioClip gameOverSound;				//Audio clip to play when player dies.
 
+		public Image healthIcon;
 
 		public Image moveSinglePanel;
 
@@ -30,6 +31,7 @@ namespace Completed
 		public Sprite rightArrow;
 		public Sprite moveBorder;
 
+		public bool onExit = false;
 
 		private int maxMoves;
 		private Animator animator;					//Used to store a reference to the Player's animator component.
@@ -50,6 +52,7 @@ namespace Completed
 		//Start overrides the Start function of MovingObject
 		protected override void Start ()
 		{
+
 			//Get a component reference to the Player's animator component
 			animator = GetComponent<Animator>();
 
@@ -57,6 +60,7 @@ namespace Completed
 			food = GameManager.instance.playerFoodPoints;
 
 ;
+			onExit = false;
 
 			//Initiaize Queues
 			moves = new Queue();
@@ -86,14 +90,14 @@ namespace Completed
 
 				//m.rectTransform.localPosition = new Vector2(275 + i*32, 12);
 
-				m.rectTransform.SetParent (panel.GetComponent<RectTransform>());
+				m.rectTransform.SetParent (panel.GetComponent<RectTransform>(),false);
 
-				m.transform.parent = panel.transform; 
+				m.transform.SetParent( panel.transform, false); 
 
 				m.rectTransform.sizeDelta = new Vector2(32, 32);
 				//m.rectTransform.anchoredPosition = Vector2.one;
 				m.transform.localScale = Vector2.one;
-				m.rectTransform.localPosition = new Vector2(237 + i*40, 20);
+				m.rectTransform.localPosition = new Vector2(237 + i*40, 22);
 
 
 				//m.rectTransform.sizeDelta = new Vector2(32, 32);
@@ -187,19 +191,45 @@ namespace Completed
 					setMove(moveBar[count],UP);
 					//Debug.Log ("UP Queued");
 				} 
-				if (Input.GetKeyDown (KeyCode.LeftArrow)) {
+				else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
 					moves.Enqueue (LEFT);
 					moveBarQ.Enqueue (moveBar[count]);
 					setMove(moveBar[count],LEFT);
 					//Debug.Log ("LEFT Queued");
 				}
-				if (Input.GetKeyDown (KeyCode.DownArrow)) {
+				else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 					moves.Enqueue (DOWN);
 					moveBarQ.Enqueue (moveBar[count]);
 					setMove(moveBar[count],DOWN);
 					//Debug.Log ("DOWN Queued");
 				} 
-				if (Input.GetKeyDown (KeyCode.RightArrow)) {
+				else if (Input.GetKeyDown (KeyCode.RightArrow)) {
+					moves.Enqueue (RIGHT);
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],RIGHT);
+					//Debug.Log ("RIGHT Queued");
+				}
+
+
+				else if (Input.GetKeyDown (KeyCode.W)) {
+					moves.Enqueue (UP);
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],UP);
+					//Debug.Log ("UP Queued");
+				} 
+				else if (Input.GetKeyDown (KeyCode.A)) {
+					moves.Enqueue (LEFT);
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],LEFT);
+					//Debug.Log ("LEFT Queued");
+				}
+				else if (Input.GetKeyDown (KeyCode.S)) {
+					moves.Enqueue (DOWN);
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],DOWN);
+					//Debug.Log ("DOWN Queued");
+				} 
+				else if (Input.GetKeyDown (KeyCode.D)) {
 					moves.Enqueue (RIGHT);
 					moveBarQ.Enqueue (moveBar[count]);
 					setMove(moveBar[count],RIGHT);
@@ -261,6 +291,8 @@ namespace Completed
 			//Check if the tag of the trigger collided with is Exit.
 			if(other.tag == "Exit")
 			{
+				onExit = true;
+
 				//Invoke the Restart function to start the next level with a delay of restartLevelDelay (default 1 second).
 				Invoke ("Restart", restartLevelDelay);
 
@@ -273,10 +305,7 @@ namespace Completed
 			else if(other.tag == "Food")
 			{
 				//Add pointsPerFood to the players current food total.
-				food += pointsPerFood;
-				
-				//Update foodText to represent current total and notify player that they gained points
-				foodText.text = "+" + pointsPerFood + " Health: " + food;
+				addFood (pointsPerFood);
 				
 				//Call the RandomizeSfx function of SoundManager and pass in two eating sounds to choose between to play the eating sound effect.
 				SoundManager.instance.RandomizeSfx (eatSound1, eatSound2);
@@ -288,11 +317,9 @@ namespace Completed
 			//Check if the tag of the trigger collided with is Soda.
 			else if(other.tag == "Soda")
 			{
-				//Add pointsPerSoda to players food points total
-				food += pointsPerSoda;
-				
-				//Update foodText to represent current total and notify player that they gained points
-				foodText.text = "+" + pointsPerSoda + " Health: " + food;
+				//Add pointsPerSoda to the players current food total.
+				addFood (pointsPerSoda);
+
 				
 				//Call the RandomizeSfx function of SoundManager and pass in two drinking sounds to choose between to play the drinking sound effect.
 				SoundManager.instance.RandomizeSfx (drinkSound1, drinkSound2);
@@ -301,7 +328,22 @@ namespace Completed
 				other.gameObject.SetActive (false);
 			}
 		}
-		
+
+		private void addFood(int points){
+			//Add pointsPerSoda to players food points total
+			food += points;
+
+			//cant go over 100 food
+			if (food > 100) {
+				food = 100;
+			}
+
+			//health icon
+			healthIcon.fillAmount = food/100F;
+
+			//Update foodText to represent current total and notify player that they gained points
+			foodText.text = "+" + points + " Health: " + food;
+		}
 		
 		//Restart reloads the scene when called.
 		private void Restart ()
@@ -321,6 +363,9 @@ namespace Completed
 			
 			//Subtract lost food points from the players total.
 			food -= loss;
+
+			//health icon
+			healthIcon.fillAmount = food/100F;
 			
 			//Update the food display with the new total.
 			foodText.text = "-"+ loss + " Health: " + food;

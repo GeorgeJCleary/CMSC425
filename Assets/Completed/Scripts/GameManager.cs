@@ -15,7 +15,7 @@ namespace Completed
 
 		private float levelStartDelay = 2f;						//Time to wait before starting level, in seconds.
 		private int maxMoves = 7;								//Maximum number of moves
-		//public float turnDelay = 0.1f;						//Delay between each Player turn.
+		public float turnDelay = 0.1f;							//Delay between each Player turn.
 		private float prepInteval = 5f;							//Movement preparation interval in seconds	
 		public int playerFoodPoints = 100;						//Starting value for Player food points.
 
@@ -29,25 +29,27 @@ namespace Completed
 		private GameObject levelImage;							//Image to block out level as levels are being set up, background for levelText.
 		private BoardManager boardScript;						//Store a reference to our BoardManager which will set up the level.
 		private GameObject playerobject;
-		public Player player;
+		private Image healthIcon;
+		private Player player;
 		private int level = 1;									//Current level number, expressed in game as "Day 1".
 
 		private List<Enemy> enemies;							//List of all Enemy units, used to issue them move commands.
-		private bool enemiesMoving;								//Boolean to check if enemies are moving.
+		//private bool enemiesMoving;								//Boolean to check if enemies are moving.
 		private bool doingSetup = true;							//Boolean to check if we're setting up board, prevent Player from moving during setup.
 		public bool prepPhase = false;
 
 		private GameObject[] moveBar;
+		//private GameObject uipanel;
 		private int leveltracker = 0;
 
-		public Slider turnTimer;
-		private float timer = 0.0F;
+		private Slider turnTimer;
 
 		
 		//Awake is always called before any Start functions
 		void Awake()
 		{
-			
+
+
 			doingSetup = true;
 			//Check if instance already exists
 			if (instance == null)
@@ -64,9 +66,6 @@ namespace Completed
 			//Sets this to not be destroyed when reloading scene
 			DontDestroyOnLoad(gameObject);
 
-
-			turnTimer =  GameObject.Find ("TurnTimer").GetComponent<Slider>();
-			turnTimer.maxValue = prepInteval;
 
 			//Assign enemies to a new List of Enemy objects.
 			enemies = new List<Enemy>();
@@ -142,6 +141,10 @@ namespace Completed
 
 		IEnumerator startTimer(float secondsLeft) {
 			//Debug.Log("Countdown started for " + secondsLeft + " seconds.");
+
+
+			turnTimer.gameObject.SetActive (true);
+
 			turnTimer.maxValue = secondsLeft;
 
 			turnTimer.value = secondsLeft;
@@ -153,6 +156,9 @@ namespace Completed
 
 				yield return null;
 			}
+
+			//hide turn timer when not in use
+			turnTimer.gameObject.SetActive (false);
 
 			//Debug.Log("Countdown finished!");
 		}
@@ -183,12 +189,12 @@ namespace Completed
 			playerobject = GameObject.Find("Player");
 			player = playerobject.GetComponent<Player> ();
 
-			turnTimer =  GameObject.Find ("TurnTimer").GetComponent<Slider>();
-			turnTimer.maxValue = prepInteval;
-			timer = prepInteval;
-			turnTimer.gameObject.SetActive (false);
+			healthIcon = GameObject.Find ("HealthImage").GetComponent<Image> ();
 
-			
+			turnTimer =  GameObject.Find ("TurnTimer").GetComponent<Slider>();
+
+			hideUI ();
+
 			//Get a reference to our image LevelImage by finding it by name.
 			levelImage = GameObject.Find("LevelImage");
 			
@@ -218,7 +224,7 @@ namespace Completed
 		//Hides black image used between levels
 		void HideLevelImage()
 		{
-			Debug.Log("hiding level image!");
+			//Debug.Log("hiding level image!");
 			//Disable the levelImage gameObject.
 			levelImage.SetActive(false);
 			
@@ -232,22 +238,67 @@ namespace Completed
 		void Update()
 		{
 			//set gameobjects in the ui to visible after setup is done for the first time for the level
-			if (leveltracker != level && !doingSetup) {
-
-				turnTimer.gameObject.SetActive (true); 
-				turnTimer.value = turnTimer.maxValue;
-
-				leveltracker = level;
-
-				moveBar = GameObject.FindGameObjectsWithTag ("MoveIcon");
-
-				Debug.Log ("moveBar size :  " +  moveBar.Length);
-
-
-				for(int i = 0 ; i < moveBar.Length; i ++) {
-					moveBar[i].GetComponent<Image>().enabled=true;
+			if (leveltracker != level) {
+				
+				if (!doingSetup) {
+					showUI ();
 				}
 			}
+
+			if (player.onExit) {
+				// stop things for next level
+				levelOver ();
+			}
+		}
+
+		private void showUI(){
+			Debug.Log ("showing ui   timer health and move icons");
+
+			//foodtext
+			player.foodText.enabled = true;
+			healthIcon.enabled = true;
+			healthIcon.GetComponentsInChildren<Text>()[0].enabled = true;
+
+			//turn timer
+			turnTimer.gameObject.SetActive (true); 
+			turnTimer.value = turnTimer.maxValue;
+
+			//level tracker
+			leveltracker = level;
+
+
+			//move icons
+			moveBar = GameObject.FindGameObjectsWithTag ("MoveIcon");
+			for (int i = 0; i < moveBar.Length; i++) {
+				moveBar [i].GetComponent<Image> ().enabled = true;
+			}
+		}
+
+		private void hideUI(){
+			Debug.Log ("hiding  ui   timer health and move icons");
+			//foodtext
+			player.foodText.enabled = false;
+			healthIcon.enabled = false;
+			healthIcon.GetComponentsInChildren<Text>()[0].enabled = false;
+			//turn timer
+			turnTimer.gameObject.SetActive (false);
+
+			//move icons
+			moveBar = GameObject.FindGameObjectsWithTag ("MoveIcon");
+			for (int i = 0; i < moveBar.Length; i++) {
+				moveBar [i].GetComponent<Image> ().enabled = false;
+			}
+		}
+
+		private void levelOver(){
+			
+			prepPhase = false;
+			firstTurn = true;
+			//next level
+			StopCoroutine ("processMovements");
+			StopCoroutine ("MoveEnemies");
+			StopCoroutine ("startTimer");
+			//StopCoroutine ("phaseShifter");
 		}
 		
 		//Call this to add the passed in Enemy to the List of Enemy objects.
@@ -281,10 +332,12 @@ namespace Completed
 		IEnumerator MoveEnemies()
 		{
 			//While enemiesMoving is true player is unable to move.
-			enemiesMoving = true;
-			
+			//enemiesMoving = true;
+
+
+			// what does this code do?
 			//Wait for turnDelay seconds, defaults to .1 (100 ms).
-			//yield return new WaitForSeconds(turnDelay);
+			yield return new WaitForSeconds(turnDelay);
 			
 			//If there are no enemies spawned (IE in first level):
 			//if (enemies.Count == 0) 
@@ -308,7 +361,7 @@ namespace Completed
 			//playersTurn = true;
 			
 			//Enemies are done moving, set enemiesMoving to false.
-			enemiesMoving = false;
+			//enemiesMoving = false;
 
 			yield return null;
 		}
