@@ -97,7 +97,7 @@ namespace Completed
 				m.rectTransform.sizeDelta = new Vector2(32, 32);
 				//m.rectTransform.anchoredPosition = Vector2.one;
 				m.transform.localScale = Vector2.one;
-				m.rectTransform.localPosition = new Vector2(237 + i*40, 22);
+				m.rectTransform.localPosition = new Vector2(100 + i*40, 20);
 
 
 				//m.rectTransform.sizeDelta = new Vector2(32, 32);
