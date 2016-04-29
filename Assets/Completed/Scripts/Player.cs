@@ -47,6 +47,11 @@ namespace Completed
 		private readonly byte LEFT = 1;			//			0
 		private readonly byte DOWN = 2;			//		1		3
 		private readonly byte RIGHT = 3;		//			2
+		private readonly byte ATTACK = 4;
+
+
+		public int xDir = 0; // current x facing
+		public int yDir = 1; // current y facing
 
 		
 		//Start overrides the Start function of MovingObject
@@ -59,7 +64,7 @@ namespace Completed
 			//Get the current food point total stored in GameManager.instance between levels.
 			food = GameManager.instance.playerFoodPoints;
 
-;
+
 			onExit = false;
 
 			//Initiaize Queues
@@ -131,6 +136,8 @@ namespace Completed
 				i.sprite = downArrow;
 			}else if (dir == RIGHT){
 				i.sprite = rightArrow;
+			}else if (dir == ATTACK){
+				i.sprite = null;
 			}else{
 				Debug.Log("Something other that a direction needs to go in the movetile");
 			}
@@ -164,11 +171,13 @@ namespace Completed
 					AttemptMove<Wall> (0, 1);
 				} else if (move == LEFT) {
 					AttemptMove<Wall> (-1, 0);
-				}else if (move == DOWN){
+				} else if (move == DOWN) {
 					AttemptMove<Wall> (0, -1);
-				}else if (move == RIGHT){
+				} else if (move == RIGHT) {
 					AttemptMove<Wall> (1, 0);
-				}else{
+				} else if (move == ATTACK) {
+					Attack ();
+				} else{
 					Debug.Log("Something other that a direction was queued");
 				}
 					
@@ -235,9 +244,69 @@ namespace Completed
 					setMove(moveBar[count],RIGHT);
 					//Debug.Log ("RIGHT Queued");
 				}
+				else if (Input.GetKeyDown (KeyCode.Space)) {
+					moves.Enqueue (ATTACK);
+					moveBarQ.Enqueue (moveBar[count]);
+					setMove(moveBar[count],ATTACK);
+					//Debug.Log ("RIGHT Queued");
+				}
 
 			}
 		}
+
+		//try to attack
+		protected bool Attack ()
+		{
+
+			//Store start position to move from, based on objects current transform position.
+			Vector2 start = transform.position;
+
+			// Calculate end position based on the direction parameters passed in when calling Move.
+			Vector2 end = start + new Vector2 (xDir, yDir);
+
+			//Disable the boxCollider so that linecast doesn't hit this object's own collider.
+			boxCollider.enabled = false;
+
+			//Cast a line from start point to end point checking collision on blockingLayer.
+			RaycastHit2D hit = Physics2D.Linecast (start, end, blockingLayer);
+
+			//Re-enable boxCollider after linecast
+			boxCollider.enabled = true;
+
+			//Set the attack trigger of the player's animation controller in order to play the player's attack animation.
+			animator.SetTrigger ("playerChop");
+
+			//Check if anything was hit
+			if(hit.transform != null)
+			{
+
+				//check if its an enemy
+				//If enemy hit kill it
+				GameObject g= hit.transform.gameObject;
+				Enemy enemyscript = g.GetComponent<Enemy> ();
+				if ( enemyscript != null) {
+					killEnemy (g, enemyscript);
+				}
+
+				//Return true to say that Move was successful
+				return true;
+			}
+
+			//If something was hit, return false, Move was unsuccesful.
+			return false;
+
+		}
+
+		private void killEnemy(GameObject enemy, Enemy enemyscript){
+			// dont show enemy
+			enemy.SetActive(false);
+
+			//remove the script from the list of enemies
+			GameManager.instance.enemies.Remove (enemyscript);
+			//enemy.moving = false;
+
+		}
+
 		
 		//AttemptMove overrides the AttemptMove function in the base class MovingObject
 		//AttemptMove takes a generic parameter T which for Player will be of the type Wall, it also takes integers for x and y direction to move in.

@@ -33,7 +33,7 @@ namespace Completed
 		private Player player;
 		private int level = 1;									//Current level number, expressed in game as "Day 1".
 
-		private List<Enemy> enemies;							//List of all Enemy units, used to issue them move commands.
+		public List<Enemy> enemies;							//List of all Enemy units, used to issue them move commands.
 		//private bool enemiesMoving;								//Boolean to check if enemies are moving.
 		private bool doingSetup = true;							//Boolean to check if we're setting up board, prevent Player from moving during setup.
 		public bool prepPhase = false;
