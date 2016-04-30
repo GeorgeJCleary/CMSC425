@@ -50,8 +50,6 @@ namespace Completed
 		private readonly byte ATTACK = 4;
 
 
-		public int xDir = 0; // current x facing
-		public int yDir = 1; // current y facing
 
 		
 		//Start overrides the Start function of MovingObject
@@ -176,7 +174,8 @@ namespace Completed
 				} else if (move == RIGHT) {
 					AttemptMove<Wall> (1, 0);
 				} else if (move == ATTACK) {
-					Attack ();
+					//split into attack up or down or right or left
+					Attack (0,1);
 				} else{
 					Debug.Log("Something other that a direction was queued");
 				}
@@ -255,14 +254,14 @@ namespace Completed
 		}
 
 		//try to attack
-		protected bool Attack ()
+		protected bool Attack (int x, int y)
 		{
 
 			//Store start position to move from, based on objects current transform position.
 			Vector2 start = transform.position;
 
 			// Calculate end position based on the direction parameters passed in when calling Move.
-			Vector2 end = start + new Vector2 (xDir, yDir);
+			Vector2 end = start + new Vector2 (x, y);
 
 			//Disable the boxCollider so that linecast doesn't hit this object's own collider.
 			boxCollider.enabled = false;
@@ -283,16 +282,20 @@ namespace Completed
 				//check if its an enemy
 				//If enemy hit kill it
 				GameObject g= hit.transform.gameObject;
-				Enemy enemyscript = g.GetComponent<Enemy> ();
-				if ( enemyscript != null) {
-					killEnemy (g, enemyscript);
+				if(g.tag.Equals("Enemy")){
+					Enemy enemyscript = g.GetComponent<Enemy> ();
+					if ( enemyscript != null) {
+						killEnemy (g, enemyscript);
+
+						//Return true to say that attack was successful
+						return true;
+					}
 				}
 
-				//Return true to say that Move was successful
-				return true;
+
 			}
 
-			//If something was hit, return false, Move was unsuccesful.
+			//return false, attack was unsuccesful.
 			return false;
 
 		}

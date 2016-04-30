@@ -31,7 +31,8 @@ namespace Completed
 		private GameObject playerobject;
 		private Image healthIcon;
 		private Player player;
-		private int level = 1;									//Current level number, expressed in game as "Day 1".
+		// debugging this
+		private int level = 4;									//Current level number, expressed in game as "Day 1".
 
 		public List<Enemy> enemies;							//List of all Enemy units, used to issue them move commands.
 		//private bool enemiesMoving;								//Boolean to check if enemies are moving.

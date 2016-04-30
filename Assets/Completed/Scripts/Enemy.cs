@@ -15,7 +15,7 @@ namespace Completed
 		private Transform target;							//Transform to attempt to move toward each turn.
 		private bool skipMove;								//Boolean to determine whether or not enemy should skip a turn or move this turn.
 
-		public bool moving = true;
+		//public bool moving = true;
 		
 		//Start overrides the virtual Start function of the base class.
 		protected override void Start ()
@@ -39,7 +39,7 @@ namespace Completed
 		//See comments in MovingObject for more on how base AttemptMove function works.
 		protected override void AttemptMove <T> (int xDir, int yDir)
 		{
-			
+			//Debug.Log(skipMove + " moving x: " + xDir +" y : " + yDir);
 			//Check if skipMove is true, if so set it to false and skip this turn.
 			if(skipMove)
 			{
@@ -47,7 +47,7 @@ namespace Completed
 				return;
 				
 			}
-			
+			//Debug.Log("moving x: " + xDir +" y : " + yDir);
 			//Call the AttemptMove function from MovingObject.
 			base.AttemptMove <T> (xDir, yDir);
 			
@@ -59,27 +59,32 @@ namespace Completed
 		//MoveEnemy is called by the GameManger each turn to tell each Enemy to try to move towards the player.
 		public void MoveEnemy ()
 		{
-			if (moving) {
-				//Declare variables for X and Y axis move directions, these range from -1 to 1.
-				//These values allow us to choose between the cardinal directions: up, down, left and right.
-				int xDir = 0;
-				int yDir = 0;
+		
+			//Declare variables for X and Y axis move directions, these range from -1 to 1.
+			//These values allow us to choose between the cardinal directions: up, down, left and right.
+			int xDir = 0;
+			int yDir = 0;
+		
+			//If the difference in positions is approximately zero (Epsilon) do the following:
+			if (Mathf.Abs (target.position.x - transform.position.x) < 0.1) {
 			
-				//If the difference in positions is approximately zero (Epsilon) do the following:
-				if (Mathf.Abs (target.position.x - transform.position.x) < float.Epsilon) {
+				//If the y coordinate of the target's (player) position is greater than the y coordinate of this enemy's position set y direction 1 (to move up). If not, set it to -1 (to move down).
+				yDir = target.position.y > transform.position.y ? 1 : -1;
+
+				//Debug.Log("move up or down " + yDir);
 				
-					//If the y coordinate of the target's (player) position is greater than the y coordinate of this enemy's position set y direction 1 (to move up). If not, set it to -1 (to move down).
-					yDir = target.position.y > transform.position.y ? 1 : -1;
-			
-					//If the difference in positions is not approximately zero (Epsilon) do the following:
-				} else {
-					//Check if target x position is greater than enemy's x position, if so set x direction to 1 (move right), if not set to -1 (move left).
-					xDir = target.position.x > transform.position.x ? 1 : -1;
-			
-					//Call the AttemptMove function and pass in the generic parameter Player, because Enemy is moving and expecting to potentially encounter a Player
-					AttemptMove <Player> (xDir, yDir);
-				}
+				//If the difference in positions is not approximately zero (Epsilon) do the following:
+			} else {
+				//Check if target x position is greater than enemy's x position, if so set x direction to 1 (move right), if not set to -1 (move left).
+				xDir = target.position.x > transform.position.x ? 1 : -1;
+		
+				//Debug.Log("left or right " + xDir);
 			}
+
+			//Call the AttemptMove function and pass in the generic parameter Player, because Enemy is moving and expecting to potentially encounter a Player
+			AttemptMove <Player> (xDir, yDir);
+
+
 		}
 		
 		
