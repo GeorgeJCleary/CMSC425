@@ -283,13 +283,18 @@ namespace Completed
 				//If enemy hit kill it
 				GameObject g= hit.transform.gameObject;
 				if(g.tag.Equals("Enemy")){
-					Enemy enemyscript = g.GetComponent<Enemy> ();
-					if ( enemyscript != null) {
-						killEnemy (g, enemyscript);
-
-						//Return true to say that attack was successful
+					Enemy e1;
+					Enemy2 e2;
+					if (g.GetComponent<Enemy> () != null) {
+						e1 = g.GetComponent<Enemy> ();
+						killEnemy (g, e1);
+						return true;
+					} else {
+						e2 = g.GetComponent<Enemy2> ();
+						killEnemy (g, e2);
 						return true;
 					}
+	
 				}
 
 
@@ -300,7 +305,7 @@ namespace Completed
 
 		}
 
-		private void killEnemy(GameObject enemy, Enemy enemyscript){
+		private void killEnemy(GameObject enemy, MovingObject enemyscript){
 			// dont show enemy
 			enemy.SetActive(false);
 

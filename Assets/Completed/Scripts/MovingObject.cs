@@ -14,6 +14,7 @@ namespace Completed
 		private Rigidbody2D rb2D;				//The Rigidbody2D component attached to this object.
 		private float inverseMoveTime;			//Used to make movement more efficient.
 	
+		public bool canMove;
 
 		//Protected, virtual functions can be overridden by inheriting classes.
 		protected virtual void Start ()
@@ -97,7 +98,7 @@ namespace Completed
 			RaycastHit2D hit;
 			
 			//Set canMove to true if Move was successful, false if failed.
-			bool canMove = Move (xDir, yDir, out hit);
+			canMove = Move (xDir, yDir, out hit);
 			
 			//Check if nothing was hit by linecast
 			if(hit.transform == null)

@@ -34,7 +34,10 @@ namespace Completed
 		// debugging this
 		private int level = 4;									//Current level number, expressed in game as "Day 1".
 
-		public List<Enemy> enemies;							//List of all Enemy units, used to issue them move commands.
+		public List<MovingObject> enemies;							//List of all Enemy units, used to issue them move commands.
+
+		public List<MovingObject> bullets;							//List of all projectile units, used to issue them move commands.
+
 		//private bool enemiesMoving;								//Boolean to check if enemies are moving.
 		private bool doingSetup = true;							//Boolean to check if we're setting up board, prevent Player from moving during setup.
 		public bool prepPhase = false;
@@ -69,7 +72,7 @@ namespace Completed
 
 
 			//Assign enemies to a new List of Enemy objects.
-			enemies = new List<Enemy>();
+			enemies = new List<MovingObject>();
 			
 			//Get a component reference to the attached BoardManager script
 			boardScript = GetComponent<BoardManager>();
@@ -303,10 +306,23 @@ namespace Completed
 		}
 		
 		//Call this to add the passed in Enemy to the List of Enemy objects.
-		public void AddEnemyToList(Enemy script)
+		public void AddEnemyToList(MovingObject script)
 		{
 			//Add Enemy to List enemies.
 			enemies.Add(script);
+		}
+
+		//Call this to add the passed in Enemy to the List of Enemy objects.
+		public void AddBulletToList(Projectile script)
+		{
+			//Add Enemy to List enemies.
+			bullets.Add(script);
+		}
+
+		public void removeBulletfromList(Projectile script)
+		{
+			//Add Enemy to List enemies.
+			bullets.Remove(script);
 		}
 		
 		
@@ -346,13 +362,34 @@ namespace Completed
 				//Wait for turnDelay seconds between moves, replaces delay caused by enemies moving when there are none.
 				//yield return new WaitForSeconds(turnDelay);
 			//}
+			for (int i = 0; i < bullets.Count; i++)
+			{
+				//Debug.Log("Moving enemy: "+ i);
+
+				bullets [i].GetComponent<Projectile> ().MoveBullet ();
+
+
+
+				//Wait for Enemy's moveTime before moving next Enemy, 
+				yield return new WaitForSeconds(bullets [i].moveTime);
+
+			}
 			
 			//Loop through List of Enemy objects.
 			for (int i = 0; i < enemies.Count; i++)
 			{
 				//Debug.Log("Moving enemy: "+ i);
 				//Call the MoveEnemy function of Enemy at index i in the enemies List.
-				enemies[i].MoveEnemy ();
+				Enemy e1;
+				Enemy2 e2;
+				if (enemies [i].GetComponent<Enemy> () != null) {
+					e1 = (Enemy)enemies [i];
+					e1.MoveEnemy ();
+				} else {
+					e2 = (Enemy2)enemies [i];
+					e2.MoveEnemy ();
+				}
+
 				
 				//Wait for Enemy's moveTime before moving next Enemy, 
 				yield return new WaitForSeconds(enemies[i].moveTime);
