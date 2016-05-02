@@ -395,22 +395,23 @@ namespace Completed
 			//Loop through List of Enemy objects.
 			for (int i = 0; i < enemies.Count; i++)
 			{
-				//Debug.Log("Moving enemy: "+ i);
-				//Call the MoveEnemy function of Enemy at index i in the enemies List.
-				Enemy e1;
-				Enemy2 e2;
-				if (enemies [i].GetComponent<Enemy> () != null) {
-					e1 = (Enemy)enemies [i];
-					e1.MoveEnemy ();
-				} else {
-					e2 = (Enemy2)enemies [i];
-					e2.MoveEnemy ();
-				}
+				if (enemies [i].isActiveAndEnabled) {
+					//Debug.Log("Moving enemy: "+ i);
+					//Call the MoveEnemy function of Enemy at index i in the enemies List.
+					Enemy e1;
+					Enemy2 e2;
+					if (enemies [i].GetComponent<Enemy> () != null) {
+						e1 = (Enemy)enemies [i];
+						e1.MoveEnemy ();
+					} else {
+						e2 = (Enemy2)enemies [i];
+						e2.MoveEnemy ();
+					}
 
 				
-				//Wait for Enemy's moveTime before moving next Enemy, 
-				yield return new WaitForSeconds(enemies[i].moveTime);
-
+					//Wait for Enemy's moveTime before moving next Enemy, 
+					yield return new WaitForSeconds (enemies [i].moveTime);
+				}
 			}
 			//Once Enemies are done moving, set playersTurn to true so player can move.
 			//playersTurn = true;
