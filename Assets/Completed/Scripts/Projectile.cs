@@ -20,7 +20,7 @@ namespace Completed
 		{
 			//Register this enemy with our instance of GameManager by adding it to a list of Enemy objects. 
 			//This allows the GameManager to issue movement commands.
-			GameManager.instance.AddBulletToList (this);
+			GameManager.instance.SendMessage("AddBulletToList", (this));
 
 			//Get and store a reference to the attached Animator component.
 			animator = GetComponent<Animator> ();
@@ -42,14 +42,48 @@ namespace Completed
 		//See comments in MovingObject for more on how base AttemptMove function works.
 		protected override void AttemptMove <T> (int xDir, int yDir)
 		{
-			//Debug.Log("moving x: " + xDir +" y : " + yDir);
+			//Debug.Log("moving bullet: " + this.gameObject.name);
 			//Call the AttemptMove function from MovingObject.
-			base.AttemptMove <T> (xDir, yDir);
+			Collider2D collider = Physics2D.OverlapCircle (new Vector2 (transform.position.x + xDir, transform.position.y + yDir), 0.1F);
+			// if nothing that should block stuff is in the way , move
+			if (collider  == null || collider.gameObject.layer!=8) { 
 
-			if (!canMove) {
+				base.AttemptMove <T> (xDir, yDir);
+				return;
+				//else you can't move and destroy stuff
+			} else if ((collider.gameObject.tag.Equals ("Player"))) {
+				Debug.Log ("hit player");
+				//Declare hitPlayer and set it to equal the encountered component.
+				Player p = (Player) collider.gameObject.GetComponent<Player>();
+				//Call the LoseFood function of hitPlayer passing it playerDamage, the amount of foodpoints to be subtracted.
+				p.LoseFood (playerDamage);
+
 				this.gameObject.SetActive (false);
-				GameManager.instance.removeBulletfromList (this);
+				//Destroy (this.gameObject);
+
+				return;
+				//kill enemy
+			} else if ((collider.gameObject.tag.Equals ("Enemy"))) {
+				Debug.Log ("hit enemy");
+				Enemy e1;
+				Enemy2 e2;
+				if (collider.gameObject.GetComponent<Enemy> () != null) {
+					e1 = (Enemy)collider.gameObject.GetComponent<Enemy>();
+					collider.gameObject.SetActive(false);
+				} else {
+					e2 = (Enemy2)collider.gameObject.GetComponent<Enemy2>();
+					collider.gameObject.SetActive(false);
+				}
+
+				this.gameObject.SetActive (false);
+				//Destroy (this.gameObject);
+				return;
+			} else {
+				this.gameObject.SetActive (false);
+				//Destroy (this.gameObject);
+				return;
 			}
+
 		}
 
 
@@ -70,19 +104,9 @@ namespace Completed
 		//and takes a generic parameter T which we use to pass in the component we expect to encounter, in this case Player
 		protected override void OnCantMove <T> (T component)
 		{
-			Debug.Log("hit player");
-			//Declare hitPlayer and set it to equal the encountered component.
-			Player hitPlayer = component as Player;
-
-			//Call the LoseFood function of hitPlayer passing it playerDamage, the amount of foodpoints to be subtracted.
-			hitPlayer.LoseFood (playerDamage);
-
-			//Set the attack trigger of animator to trigger Enemy attack animation.
-			//animator.SetTrigger ("enemyAttack");
-
-
-			//Call the RandomizeSfx function of SoundManager passing in the two audio clips to choose randomly between.
-			//SoundManager.instance.RandomizeSfx (attackSound1);
+			Debug.Log("error?");
+			this.gameObject.SetActive (false);
+			//Destroy (this.gameObject);
 		}
 	}
 }

@@ -11,10 +11,10 @@ namespace Completed
 
 		//variable we can edit to change game experience
 		private float thinkingTime = 4f;	 					// thinking time between the level start and first move countdown
-		private float firstTurnExtraTime = 4f;					// first Turn Extra Time for countdown timer of the first turn
+		private float firstTurnExtraTime = 2f;					// first Turn Extra Time for countdown timer of the first turn
 
 		private float levelStartDelay = 2f;						//Time to wait before starting level, in seconds.
-		private int maxMoves = 7;								//Maximum number of moves
+		private int maxMoves = 5;								//Maximum number of moves
 		public float turnDelay = 0.1f;							//Delay between each Player turn.
 		private float prepInteval = 5f;							//Movement preparation interval in seconds	
 		public int playerFoodPoints = 100;						//Starting value for Player food points.
@@ -36,7 +36,7 @@ namespace Completed
 
 		public List<MovingObject> enemies;							//List of all Enemy units, used to issue them move commands.
 
-		public List<MovingObject> bullets;							//List of all projectile units, used to issue them move commands.
+		public List<Projectile> bullets;							//List of all projectile units, used to issue them move commands.
 
 		//private bool enemiesMoving;								//Boolean to check if enemies are moving.
 		private bool doingSetup = true;							//Boolean to check if we're setting up board, prevent Player from moving during setup.
@@ -135,12 +135,24 @@ namespace Completed
 
 
 				StartCoroutine("MoveEnemies");
-				yield return new WaitForSeconds (1);
+				yield return new WaitForSeconds (1.0F);
 			}
 
+			cleanProjectiles();
 			//Debug.Log ("MOVING IS DONE");
 			prepPhase = true;
 
+		}
+
+		private void cleanProjectiles (){
+			for (int i = 0; i < bullets.Count; i++)
+			{
+				if (bullets [i].gameObject.activeInHierarchy == false) {
+					Destroy (bullets [i].gameObject);
+					bullets.RemoveAt (i);
+				}
+
+			}
 		}
 
 		IEnumerator startTimer(float secondsLeft) {
@@ -313,17 +325,19 @@ namespace Completed
 		}
 
 		//Call this to add the passed in Enemy to the List of Enemy objects.
+		public void removeEnemyfromList(MovingObject script)
+		{
+			//Add Enemy to List enemies.
+			enemies.Remove(script);
+		}
+
+		//Call this to add the passed in Enemy to the List of Enemy objects.
 		public void AddBulletToList(Projectile script)
 		{
 			//Add Enemy to List enemies.
 			bullets.Add(script);
 		}
-
-		public void removeBulletfromList(Projectile script)
-		{
-			//Add Enemy to List enemies.
-			bullets.Remove(script);
-		}
+			
 		
 		
 		//GameOver is called when the player reaches 0 food points
@@ -362,18 +376,21 @@ namespace Completed
 				//Wait for turnDelay seconds between moves, replaces delay caused by enemies moving when there are none.
 				//yield return new WaitForSeconds(turnDelay);
 			//}
-			for (int i = 0; i < bullets.Count; i++)
+
+			GameObject[] bullet = GameObject.FindGameObjectsWithTag ("Projectile");
+			for (int i = 0; i < bullet.Length; i++)
 			{
-				//Debug.Log("Moving enemy: "+ i);
+				Projectile p = bullet [i].GetComponent<Projectile> ();
+				//Debug.Log("print bullet array: "+ bullets.);
+				float temp = p.moveTime;
 
-				bullets [i].GetComponent<Projectile> ().MoveBullet ();
-
-
+				p.MoveBullet ();
 
 				//Wait for Enemy's moveTime before moving next Enemy, 
-				yield return new WaitForSeconds(bullets [i].moveTime);
+				yield return new WaitForSeconds(temp);
 
 			}
+
 			
 			//Loop through List of Enemy objects.
 			for (int i = 0; i < enemies.Count; i++)

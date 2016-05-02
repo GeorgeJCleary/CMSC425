@@ -18,6 +18,7 @@ namespace Completed
 		public GameObject bullet;
 		//public bool moving = true;
 
+
 		//Start overrides the virtual Start function of the base class.
 		protected override void Start ()
 		{
@@ -74,12 +75,16 @@ namespace Completed
 			} else {
 				xDir = target.position.x > transform.position.x ? 1 : -1;
 			}
-			Debug.Log("spawning bullet at x: " + transform.position.x + xDir +" y : " + transform.position.y + yDir);
-			//Instantiate the GameObject instance using the prefab chosen for toInstantiate at the Vector3 corresponding to current grid position in loop, cast it to GameObject.
-			GameObject instance =
-				Instantiate (bullet, new Vector3 (transform.position.x + xDir, transform.position.y + yDir, 0f), Quaternion.identity) as GameObject;
-			instance.GetComponent<Projectile> ().setDirs(xDir,yDir);
+			//Debug.Log("spawning bullet at x: " + transform.position.x + xDir +" y : " + transform.position.y + yDir);
+			//Instantiate a bullet shooting towards the player if there isnt any colliderboxes where the bullet wants to go
+			if (Physics2D.OverlapCircle (new Vector2 (transform.position.x + xDir, transform.position.y + yDir), 0.1F) == null) {
+				GameObject instance =
+					Instantiate (bullet, new Vector3 (transform.position.x + xDir, transform.position.y + yDir, 0f), Quaternion.identity) as GameObject;
 
+				instance.GetComponent<Projectile> ().setDirs (xDir, yDir);
+			} else {
+				Debug.Log("ColliderBox already at x: " + transform.position.x + xDir +" y : " + transform.position.y + yDir);
+			}
 		}
 
 

@@ -28,8 +28,8 @@ namespace Completed
 			//By storing the reciprocal of the move time we can use it by multiplying instead of dividing, this is more efficient.
 			inverseMoveTime = 1f / moveTime;
 		}
-		
-		
+
+
 		//Move returns true if it is able to move and false if not. 
 		//Move takes parameters for x direction, y direction and a RaycastHit2D to check collision.
 		protected bool Move (int xDir, int yDir, out RaycastHit2D hit)
@@ -62,8 +62,16 @@ namespace Completed
 			//If something was hit, return false, Move was unsuccesful.
 			return false;
 		}
-		
-		
+
+		void OnCollisionEnter2D(Collision2D coll) {
+
+			Debug.Log("bullet inside object");
+			if (!this.gameObject.tag.Equals ("Player")) {
+				Destroy (this.gameObject);
+			}
+
+		}
+
 		//Co-routine for moving units from one space to next, takes a parameter end to specify where to move to.
 		protected IEnumerator SmoothMovement (Vector3 end)
 		{
