@@ -84,7 +84,8 @@ namespace Completed
 			}
 			//Debug.Log("spawning bullet at x: " + transform.position.x + xDir +" y : " + transform.position.y + yDir);
 			//Instantiate a bullet shooting towards the player if there isnt any colliderboxes where the bullet wants to go
-			if (Physics2D.OverlapCircle (new Vector2 (transform.position.x + xDir, transform.position.y + yDir), 0.1F) == null) {
+			Collider2D collider = Physics2D.OverlapCircle (new Vector2 (transform.position.x + xDir, transform.position.y + yDir), 0.1F);
+			if (collider == null  || (collider.gameObject.layer != 8)) {
 				GameObject instance =
 					Instantiate (bullet, new Vector3 (transform.position.x + xDir, transform.position.y + yDir, 0f), Quaternion.identity) as GameObject;
 
