@@ -29,6 +29,7 @@ namespace Completed
 		public Sprite downArrow;
 		public Sprite leftArrow;
 		public Sprite rightArrow;
+		public Sprite attackIcon;
 		public Sprite moveBorder;
 
 		public bool onExit = false;
@@ -135,7 +136,7 @@ namespace Completed
 			}else if (dir == RIGHT){
 				i.sprite = rightArrow;
 			}else if (dir == ATTACK){
-				i.sprite = null;
+				i.sprite = attackIcon;
 			}else{
 				Debug.Log("Something other that a direction needs to go in the movetile");
 			}
