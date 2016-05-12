@@ -1,14 +1,12 @@
 fileFormatVersion: 2
-guid: 4e164e17846db674ea9d576e827dd36b
-timeCreated: 1462415979
+guid: ee3d65c9eddad77428218d59e52db5fb
+timeCreated: 1462994577
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: blocks_0
-    21300002: blocks_1
-    21300004: blocks_2
-    21300006: blocks_3
-    21300008: blocks_4
+    21300000: newplayerspriteidol_0
+    21300002: newplayerspriteidol_1
+    21300004: newplayerspriteidol_2
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -31,10 +29,10 @@ TextureImporter:
   cubemapConvolutionSteps: 7
   cubemapConvolutionExponent: 1.5
   seamlessCubemap: 0
-  textureFormat: -3
-  maxTextureSize: 1024
+  textureFormat: -1
+  maxTextureSize: 2048
   textureSettings:
-    filterMode: 0
+    filterMode: -1
     aniso: 16
     mipBias: -1
     wrapMode: 1
@@ -55,81 +53,69 @@ TextureImporter:
   buildTargetSettings: []
   spriteSheet:
     sprites:
-    - name: blocks_0
+    - name: newplayerspriteidol_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 32
-        height: 32
+        height: 33
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
-      - - {x: -16, y: 16}
-        - {x: -16, y: -16}
-        - {x: 16, y: -16}
-        - {x: 16, y: 16}
-    - name: blocks_1
+      - - {x: -11, y: 16.5}
+        - {x: -12, y: 15.5}
+        - {x: -16, y: -4.5}
+        - {x: -16, y: -12.5}
+        - {x: -12, y: -16.5}
+        - {x: 10, y: -16.5}
+        - {x: 10, y: 5.5}
+        - {x: 6, y: 16.5}
+    - name: newplayerspriteidol_1
       rect:
         serializedVersion: 2
         x: 32
         y: 0
         width: 32
-        height: 32
+        height: 33
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
-      - - {x: -16, y: 16}
-        - {x: -16, y: -16}
-        - {x: 16, y: -16}
-        - {x: 16, y: 16}
-    - name: blocks_2
+      - - {x: -10, y: 16.5}
+        - {x: -12, y: 15.5}
+        - {x: -13, y: 11.5}
+        - {x: -16, y: -5.5}
+        - {x: -16, y: -13.5}
+        - {x: -13, y: -16.5}
+        - {x: 5, y: -16.5}
+        - {x: 11, y: -14.5}
+        - {x: 11, y: 7.5}
+        - {x: 6, y: 16.5}
+    - name: newplayerspriteidol_2
       rect:
         serializedVersion: 2
         x: 64
         y: 0
         width: 32
-        height: 32
+        height: 33
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
-      - - {x: -16, y: 16}
-        - {x: -16, y: -16}
-        - {x: 16, y: -16}
-        - {x: 16, y: 16}
-    - name: blocks_3
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 0
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: -16, y: 16}
-        - {x: -16, y: -16}
-        - {x: 16, y: -16}
-        - {x: 16, y: 16}
-    - name: blocks_4
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 0
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline:
-      - - {x: -16, y: 16}
-        - {x: -16, y: -16}
-        - {x: 16, y: -16}
-        - {x: 16, y: 16}
+      - - {x: 12, y: -7.5}
+        - {x: 12, y: 2.5}
+        - {x: 8, y: 11.5}
+        - {x: 2, y: 16.5}
+        - {x: -6, y: 16.5}
+        - {x: -12, y: 14.5}
+        - {x: -16, y: -1.5}
+        - {x: -16, y: -13.5}
+        - {x: -11, y: -16.5}
+        - {x: 6, y: -16.5}
+        - {x: 8, y: -15.5}
+        - {x: 10, y: -13.5}
     outline: []
   spritePackingTag: 
   userData: 
