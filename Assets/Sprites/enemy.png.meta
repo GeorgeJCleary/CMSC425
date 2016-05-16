@@ -1,12 +1,13 @@
 fileFormatVersion: 2
-guid: 627c7a58223957d4085bf5e695c1d6ae
-timeCreated: 1462563285
+guid: e0ba7697dd4a48f419ccc290acd8ae87
+timeCreated: 1463367254
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: playerspriteidol_0
-    21300002: playerspriteidol_1
-    21300004: playerspriteidol_2
+    21300000: enemy_idle1
+    21300002: enemy_idle2
+    21300004: enemy_attack1
+    21300006: enemy_attack2
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -53,64 +54,81 @@ TextureImporter:
   buildTargetSettings: []
   spriteSheet:
     sprites:
-    - name: playerspriteidol_0
+    - name: enemy_idle1
       rect:
         serializedVersion: 2
         x: 0
-        y: 1
+        y: 0
         width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
-      - - {x: -12, y: 16}
-        - {x: -12, y: 15}
-        - {x: -15, y: 8}
-        - {x: -15, y: -16}
-        - {x: 10, y: -16}
-        - {x: 10, y: 15}
-        - {x: 7, y: 16}
-    - name: playerspriteidol_1
+      - - {x: -13, y: 16}
+        - {x: -13, y: -9}
+        - {x: -11, y: -12}
+        - {x: -7, y: -16}
+        - {x: 13, y: -16}
+        - {x: 16, y: -14}
+        - {x: 16, y: 16}
+    - name: enemy_idle2
       rect:
         serializedVersion: 2
         x: 32
-        y: 1
+        y: 0
         width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
-      - - {x: 4, y: 16}
-        - {x: -13, y: 16}
-        - {x: -15, y: 11}
-        - {x: -15, y: -15}
-        - {x: -14, y: -16}
-        - {x: 8, y: -16}
-        - {x: 11, y: -9}
-        - {x: 11, y: 6}
-        - {x: 8, y: 12}
-    - name: playerspriteidol_2
+      - - {x: -11, y: 16}
+        - {x: -13, y: 9}
+        - {x: -13, y: -12}
+        - {x: -8, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 9}
+        - {x: 10, y: 16}
+    - name: enemy_attack1
       rect:
         serializedVersion: 2
         x: 64
-        y: 1
+        y: 0
         width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
-      - - {x: -15, y: 8}
-        - {x: -15, y: -14}
-        - {x: -14, y: -16}
-        - {x: 12, y: -16}
-        - {x: 12, y: 0}
-        - {x: 10, y: 12}
-        - {x: 4, y: 16}
-        - {x: -6, y: 16}
-        - {x: -13, y: 15}
+      - - {x: 16, y: 16}
+        - {x: -4, y: 16}
+        - {x: -6, y: 14}
+        - {x: -13, y: 2}
+        - {x: -13, y: -3}
+        - {x: -7, y: -16}
+        - {x: 14, y: -16}
+        - {x: 16, y: -12}
+    - name: enemy_attack2
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline:
+      - - {x: -6, y: 16}
+        - {x: -16, y: 10}
+        - {x: -16, y: -10}
+        - {x: -15, y: -13}
+        - {x: -9, y: -16}
+        - {x: 13, y: -16}
+        - {x: 16, y: -12}
+        - {x: 16, y: 8}
+        - {x: 11, y: 16}
     outline: []
   spritePackingTag: 
   userData: 
