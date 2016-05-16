@@ -30,6 +30,7 @@ namespace Completed
 		private BoardManager boardScript;						//Store a reference to our BoardManager which will set up the level.
 		private GameObject playerobject;
 		private Image healthIcon;
+		private Image healthContainer;
 		private Player player;
 		// debugging this
 		private int level = 4;									//Current level number, expressed in game as "Day 1".
@@ -206,7 +207,7 @@ namespace Completed
 			player = playerobject.GetComponent<Player> ();
 
 			healthIcon = GameObject.Find ("HealthImage").GetComponent<Image> ();
-
+			healthContainer = GameObject.Find ("HealthBottle").GetComponent<Image> ();
 			turnTimer =  GameObject.Find ("TurnTimer").GetComponent<Slider>();
 
 			hideUI ();
@@ -218,7 +219,7 @@ namespace Completed
 			levelText = GameObject.Find("LevelText").GetComponent<Text>();
 			
 			//Set the text of levelText to the string "Day" and append the current level number.
-			levelText.text = "Day " + level;
+			levelText.text = "Level " + level;
 			
 			//Set levelImage to active blocking player's view of the game board during setup.
 			levelImage.SetActive(true);
@@ -272,6 +273,7 @@ namespace Completed
 
 			//foodtext
 			player.foodText.enabled = true;
+			healthContainer.enabled = true;
 			healthIcon.enabled = true;
 			healthIcon.GetComponentsInChildren<Text>()[0].enabled = true;
 
@@ -294,6 +296,7 @@ namespace Completed
 			Debug.Log ("hiding  ui   timer health and move icons");
 			//foodtext
 			player.foodText.enabled = false;
+			healthContainer.enabled = false;
 			healthIcon.enabled = false;
 			healthIcon.GetComponentsInChildren<Text>()[0].enabled = false;
 			//turn timer
@@ -344,7 +347,7 @@ namespace Completed
 		public void GameOver()
 		{
 			//Set levelText to display number of levels passed and game over message
-			levelText.text = "After " + level + " days\n,you died.";
+			levelText.text = "You made it to " + level + " \nbefore you died.";
 			
 			//Enable black background image gameObject.
 			levelImage.SetActive(true);
