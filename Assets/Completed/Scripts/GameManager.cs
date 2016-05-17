@@ -30,7 +30,8 @@ namespace Completed
 		private BoardManager boardScript;						//Store a reference to our BoardManager which will set up the level.
 		private GameObject playerobject;
 		private Image healthIcon;
-		private Image healthContainer;
+		private Image manaIcon;
+		private Text alertText;
 		private Player player;
 		// debugging this
 		private int level = 4;									//Current level number, expressed in game as "Day 1".
@@ -64,16 +65,19 @@ namespace Completed
 			
 			//If instance already exists and it's not this:
 			else if (instance != this)
-				
 				//Then destroy this. This enforces our singleton pattern, meaning there can only ever be one instance of a GameManager.
 				Destroy(gameObject);	
-			
+
+
 			//Sets this to not be destroyed when reloading scene
 			DontDestroyOnLoad(gameObject);
 
 
 			//Assign enemies to a new List of Enemy objects.
 			enemies = new List<MovingObject>();
+
+			//Assign bullets to a new List of Projectile objects.
+			bullets = new List<Projectile>();
 			
 			//Get a component reference to the attached BoardManager script
 			boardScript = GetComponent<BoardManager>();
@@ -139,7 +143,7 @@ namespace Completed
 				yield return new WaitForSeconds (1.0F);
 			}
 
-			cleanProjectiles();
+			//cleanProjectiles();
 			//Debug.Log ("MOVING IS DONE");
 			prepPhase = true;
 
@@ -148,9 +152,9 @@ namespace Completed
 		private void cleanProjectiles (){
 			for (int i = 0; i < bullets.Count; i++)
 			{
-				if (bullets [i].gameObject.activeInHierarchy == false) {
+				if (bullets [i].gameObject.activeSelf == false) {
 					Destroy (bullets [i].gameObject);
-					bullets.RemoveAt (i);
+					bullets.Remove (bullets [i]);
 				}
 
 			}
@@ -206,9 +210,12 @@ namespace Completed
 			playerobject = GameObject.Find("Player");
 			player = playerobject.GetComponent<Player> ();
 
+			manaIcon = GameObject.Find ("ManaImage").GetComponent<Image> ();
 			healthIcon = GameObject.Find ("HealthImage").GetComponent<Image> ();
-			healthContainer = GameObject.Find ("HealthBottle").GetComponent<Image> ();
+
 			turnTimer =  GameObject.Find ("TurnTimer").GetComponent<Slider>();
+
+			alertText = GameObject.Find ("AlertText").GetComponent<Text> ();
 
 			hideUI ();
 
@@ -264,6 +271,8 @@ namespace Completed
 
 			if (player.onExit) {
 				// stop things for next level
+
+				//if (enemiesDead())
 				levelOver ();
 			}
 		}
@@ -271,11 +280,18 @@ namespace Completed
 		private void showUI(){
 			Debug.Log ("showing ui   timer health and move icons");
 
-			//foodtext
-			player.foodText.enabled = true;
-			healthContainer.enabled = true;
+			//alert text
+			alertText.enabled = true;
+
+			//health
 			healthIcon.enabled = true;
-			healthIcon.GetComponentsInChildren<Text>()[0].enabled = true;
+			healthIcon.GetComponentInChildren<Text>().enabled = true;
+			healthIcon.GetComponentsInChildren<Image> ()[1].enabled = true;
+
+
+			//mana
+			manaIcon.enabled = true;
+			manaIcon.GetComponentsInChildren<Image> ()[1].enabled = true;
 
 			//turn timer
 			turnTimer.gameObject.SetActive (true); 
@@ -294,11 +310,18 @@ namespace Completed
 
 		private void hideUI(){
 			Debug.Log ("hiding  ui   timer health and move icons");
-			//foodtext
-			player.foodText.enabled = false;
-			healthContainer.enabled = false;
+
+
+
+			//text
+			alertText.enabled = false;
+			//health
 			healthIcon.enabled = false;
-			healthIcon.GetComponentsInChildren<Text>()[0].enabled = false;
+			healthIcon.GetComponentInChildren<Text> ().enabled = false;
+			healthIcon.GetComponentsInChildren<Image> ()[1].enabled = false;
+			//mana
+			manaIcon.enabled = false;
+			manaIcon.GetComponentsInChildren<Image> ()[1].enabled = false;
 			//turn timer
 			turnTimer.gameObject.SetActive (false);
 
@@ -318,6 +341,18 @@ namespace Completed
 			StopCoroutine ("MoveEnemies");
 			StopCoroutine ("startTimer");
 			//StopCoroutine ("phaseShifter");
+
+			//kill all projectiles
+			GameObject[] bullet = GameObject.FindGameObjectsWithTag ("Projectile");
+			for (int i = 0; i < bullet.Length; i++)
+			{
+				Projectile p = bullet [i].GetComponent<Projectile> ();
+				p.gameObject.SetActive (false);
+				Destroy (p.gameObject);
+				Destroy (p);
+
+			}
+
 		}
 		
 		//Call this to add the passed in Enemy to the List of Enemy objects.

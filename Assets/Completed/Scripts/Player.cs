@@ -12,7 +12,6 @@ namespace Completed
 		public int pointsPerFood = 10;				//Number of points to add to player food points when picking up a food object.
 		public int pointsPerSoda = 20;				//Number of points to add to player food points when picking up a soda object.
 		public int wallDamage = 1;					//How much damage a player does to a wall when chopping it.
-		public Text foodText;						//UI Text to display current player food total.
 		public AudioClip moveSound1;				//1 of 2 Audio clips to play when player moves.
 		public AudioClip moveSound2;				//2 of 2 Audio clips to play when player moves.
 		public AudioClip eatSound1;					//1 of 2 Audio clips to play when player collects a food object.
@@ -21,16 +20,35 @@ namespace Completed
 		public AudioClip drinkSound2;				//2 of 2 Audio clips to play when player collects a soda object.
 		public AudioClip gameOverSound;				//Audio clip to play when player dies.
 
+		public GameObject bullet;
+
 		public Image healthIcon;
 
+		public Image manaBar;
+
+		public Text alertText;
+
 		public Image moveSinglePanel;
+
+		public int rangedMoveCooldown = 3;
 
 		public Sprite upArrow;
 		public Sprite downArrow;
 		public Sprite leftArrow;
 		public Sprite rightArrow;
 		public Sprite attackIcon;
+		public Sprite rangedIcon;
 		public Sprite moveBorder;
+
+		public KeyCode upKey = KeyCode.W;
+		public KeyCode downKey = KeyCode.S;
+		public KeyCode leftKey = KeyCode.A;
+		public KeyCode rightKey = KeyCode.D;
+
+		public KeyCode meleeKey = KeyCode.Space;
+		public KeyCode rangeKey = KeyCode.F;
+
+		public KeyCode pauseKey = KeyCode.Escape;
 
 		public bool onExit = false;
 
@@ -49,6 +67,7 @@ namespace Completed
 		private readonly byte DOWN = 2;			//		1		3
 		private readonly byte RIGHT = 3;		//			2
 		private readonly byte ATTACK = 4;
+		private readonly byte RANGED = 5;
 
 
 
@@ -62,7 +81,6 @@ namespace Completed
 
 			//Get the current food point total stored in GameManager.instance between levels.
 			food = GameManager.instance.playerFoodPoints;
-
 
 			onExit = false;
 
@@ -80,8 +98,6 @@ namespace Completed
 
 			moveBar = GameObject.FindGameObjectsWithTag ("MoveIcon");
 
-			//Set the foodText to reflect the current player food total.
-			foodText.text = "Health: " + food;
 			
 			//Call the Start function of the MovingObject base class.
 			base.Start ();
@@ -98,10 +114,10 @@ namespace Completed
 
 				m.transform.SetParent( panel.transform, false); 
 
-				m.rectTransform.sizeDelta = new Vector2(32, 32);
+				m.rectTransform.sizeDelta = new Vector2(55, 55);
 				//m.rectTransform.anchoredPosition = Vector2.one;
 				m.transform.localScale = Vector2.one;
-				m.rectTransform.localPosition = new Vector2(100 + i*40, 20);
+				m.rectTransform.localPosition = new Vector2(65 + i*60, 20);
 
 
 				//m.rectTransform.sizeDelta = new Vector2(32, 32);
@@ -137,8 +153,10 @@ namespace Completed
 				i.sprite = rightArrow;
 			}else if (dir == ATTACK){
 				i.sprite = attackIcon;
-			}else{
-				Debug.Log("Something other that a direction needs to go in the movetile");
+			}else if (dir == RANGED){
+				i.sprite = rangedIcon;
+			} else{
+				Debug.Log("Something not implemented yet");
 			}
 		}
 
@@ -175,9 +193,25 @@ namespace Completed
 				} else if (move == RIGHT) {
 					AttemptMove<Wall> (1, 0);
 				} else if (move == ATTACK) {
-					//split into attack up or down or right or left
+					//Set the attack trigger of the player's animation controller in order to play the player's attack animation.
+					animator.SetTrigger ("playerChop");
+
+					//split into attack up or down or right or left, all 
 					Attack (0,1);
-				} else{
+					Attack (0,-1);
+					Attack (1,0);
+					Attack (-1,0);
+
+				} else if (move == RANGED){
+					//set animation to ranged attack
+					//animator.SetTrigger ("playerRangedAttack");
+
+					//call ranged attack method
+					RangedAttack (0,1);
+					RangedAttack (0,-1);
+					RangedAttack (1,0);
+					RangedAttack (-1,0);
+				}else {
 					Debug.Log("Something other that a direction was queued");
 				}
 					
@@ -194,66 +228,79 @@ namespace Completed
 			int count = moves.Count;
 			if (count < maxMoves && prepPhase) {
 				
-				if (Input.GetKeyDown (KeyCode.UpArrow)) {
+				if (Input.GetKeyDown (upKey)) {
 					moves.Enqueue (UP);
 					moveBarQ.Enqueue (moveBar[count]);
 					setMove(moveBar[count],UP);
+					incCooldowns ();
 					//Debug.Log ("UP Queued");
 				} 
-				else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
+				else if (Input.GetKeyDown (leftKey)) {
 					moves.Enqueue (LEFT);
 					moveBarQ.Enqueue (moveBar[count]);
 					setMove(moveBar[count],LEFT);
+					incCooldowns ();
 					//Debug.Log ("LEFT Queued");
 				}
-				else if (Input.GetKeyDown (KeyCode.DownArrow)) {
+				else if (Input.GetKeyDown (downKey)) {
 					moves.Enqueue (DOWN);
 					moveBarQ.Enqueue (moveBar[count]);
 					setMove(moveBar[count],DOWN);
+					incCooldowns ();
 					//Debug.Log ("DOWN Queued");
 				} 
-				else if (Input.GetKeyDown (KeyCode.RightArrow)) {
+				else if (Input.GetKeyDown (rightKey)) {
 					moves.Enqueue (RIGHT);
 					moveBarQ.Enqueue (moveBar[count]);
 					setMove(moveBar[count],RIGHT);
+					incCooldowns ();
 					//Debug.Log ("RIGHT Queued");
 				}
-
-
-				else if (Input.GetKeyDown (KeyCode.W)) {
-					moves.Enqueue (UP);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],UP);
-					//Debug.Log ("UP Queued");
-				} 
-				else if (Input.GetKeyDown (KeyCode.A)) {
-					moves.Enqueue (LEFT);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],LEFT);
-					//Debug.Log ("LEFT Queued");
-				}
-				else if (Input.GetKeyDown (KeyCode.S)) {
-					moves.Enqueue (DOWN);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],DOWN);
-					//Debug.Log ("DOWN Queued");
-				} 
-				else if (Input.GetKeyDown (KeyCode.D)) {
-					moves.Enqueue (RIGHT);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],RIGHT);
-					//Debug.Log ("RIGHT Queued");
-				}
-				else if (Input.GetKeyDown (KeyCode.Space)) {
+				else if (Input.GetKeyDown (meleeKey)) {
 					moves.Enqueue (ATTACK);
 					moveBarQ.Enqueue (moveBar[count]);
 					setMove(moveBar[count],ATTACK);
-					//Debug.Log ("RIGHT Queued");
+					incCooldowns ();
+					//Debug.Log ("melee attack Queued");
+				}
+				else if (Input.GetKeyDown (rangeKey)) {
+					if (canRanged ()) {
+						moves.Enqueue (RANGED);
+						moveBarQ.Enqueue (moveBar [count]);
+						setMove (moveBar [count], RANGED);
+						incCooldowns ();
+
+						//reset ranged attack cooldown
+						rangedMoveCooldown = 0;
+						//update energy bar
+						manaBar.fillAmount = rangedMoveCooldown/3F;
+						//Debug.Log ("Ranged Attacked Queued");
+					} else {
+						alertText.text = "Need More Energy!";
+						Debug.Log ("Ranged Attacked on cooldown");
+					}
 				}
 
 			}
 		}
 
+		//increment all cooldowns
+		protected void incCooldowns ()
+		{
+			alertText.text = "";
+			if (rangedMoveCooldown < 3) {
+				rangedMoveCooldown++;
+				manaBar.fillAmount = rangedMoveCooldown/3F;
+			}
+		}
+
+		protected bool canRanged ()
+		{
+			if (rangedMoveCooldown >= 3) {
+				return true;
+			}
+			return false;
+		}
 		//try to attack
 		protected bool Attack (int x, int y)
 		{
@@ -272,9 +319,6 @@ namespace Completed
 
 			//Re-enable boxCollider after linecast
 			boxCollider.enabled = true;
-
-			//Set the attack trigger of the player's animation controller in order to play the player's attack animation.
-			animator.SetTrigger ("playerChop");
 
 			//Check if anything was hit
 			if(hit.transform != null)
@@ -306,6 +350,22 @@ namespace Completed
 
 		}
 
+		private void RangedAttack(int xDir, int yDir){
+
+			//Debug.Log("spawning bullet at x: " + transform.position.x + xDir +" y : " + transform.position.y + yDir);
+			//Instantiate a bullet shooting towards the player if there isnt any colliderboxes where the bullet wants to go
+			Collider2D collider = Physics2D.OverlapCircle (new Vector2 (transform.position.x + xDir, transform.position.y + yDir), 0.1F);
+			if (collider == null  || (collider.gameObject.layer != 8)) {
+				GameObject instance =
+					Instantiate (bullet, new Vector3 (transform.position.x + xDir, transform.position.y + yDir, 0f), Quaternion.identity) as GameObject;
+
+				instance.GetComponent<Projectile> ().setDirs (xDir, yDir);
+			} else {
+				Debug.Log("ColliderBox already at x: " + transform.position.x + xDir +" y : " + transform.position.y + yDir);
+			}
+
+		}
+
 		private void killEnemy(GameObject enemy, MovingObject enemyscript){
 			// dont show enemy
 			enemy.SetActive(false);
@@ -323,9 +383,7 @@ namespace Completed
 		{
 			//Every time player moves, subtract from food points total.
 			//food--;
-			
-			//Update food text display to reflect current score.
-			foodText.text = "Health: " + food;
+
 			
 			//Call the AttemptMove method of the base class, passing in the component T (in this case Wall) and x and y direction to move.
 			base.AttemptMove <T> (xDir, yDir);
@@ -369,6 +427,8 @@ namespace Completed
 			//Check if the tag of the trigger collided with is Exit.
 			if(other.tag == "Exit")
 			{
+				// add if statement to check if enemies are killed 
+
 				onExit = true;
 
 				//Invoke the Restart function to start the next level with a delay of restartLevelDelay (default 1 second).
@@ -386,7 +446,7 @@ namespace Completed
 				addFood (pointsPerFood);
 				
 				//Call the RandomizeSfx function of SoundManager and pass in two eating sounds to choose between to play the eating sound effect.
-				SoundManager.instance.RandomizeSfx (eatSound1, eatSound2);
+				SoundManager.instance.RandomizeSfx (drinkSound1, drinkSound2);
 				
 				//Disable the food object the player collided with.
 				other.gameObject.SetActive (false);
@@ -419,8 +479,7 @@ namespace Completed
 			//health icon
 			healthIcon.fillAmount = food/100F;
 
-			//Update foodText to represent current total and notify player that they gained points
-			foodText.text = "+" + points + " Health: " + food;
+
 		}
 		
 		//Restart reloads the scene when called.
@@ -444,9 +503,7 @@ namespace Completed
 
 			//health icon
 			healthIcon.fillAmount = food/100F;
-			
-			//Update the food display with the new total.
-			foodText.text = "-"+ loss + " Health: " + food;
+
 			
 			//Check to see if game has ended.
 			CheckIfGameOver ();
