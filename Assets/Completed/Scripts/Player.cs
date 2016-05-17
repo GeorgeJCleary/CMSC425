@@ -20,9 +20,13 @@ namespace Completed
 		public AudioClip drinkSound2;				//2 of 2 Audio clips to play when player collects a soda object.
 		public AudioClip gameOverSound;				//Audio clip to play when player dies.
 
+
+		public float maxHealth = 100F;
 		public GameObject bullet;
 
 		public Image healthIcon;
+
+		public bool paused = false;
 
 		public Image manaBar;
 
@@ -70,7 +74,10 @@ namespace Completed
 		private readonly byte RANGED = 5;
 
 
+		public GameObject menu;
 
+		public GameObject pauseButton;
+		public GameObject exitButton;
 		
 		//Start overrides the Start function of MovingObject
 		protected override void Start ()
@@ -82,7 +89,11 @@ namespace Completed
 			//Get the current food point total stored in GameManager.instance between levels.
 			food = GameManager.instance.playerFoodPoints;
 
+			//health icon
+			healthIcon.fillAmount = food/maxHealth;
+
 			onExit = false;
+			exitButton.SetActive (false);
 
 			//Initiaize Queues
 			moves = new Queue();
@@ -165,6 +176,34 @@ namespace Completed
 			return moves.Count != 0;
 		}
 
+		public void pauseGame ()
+		{
+			paused = true;
+			menu.SetActive (true);
+			pauseButton.SetActive (true);
+			exitButton.SetActive (true);
+			Time.timeScale = 0.0F;
+		}
+
+		public void showClose ()
+		{
+			exitButton.SetActive (true);
+		}
+
+		public void unpauseGame ()
+		{
+			paused = false;
+			menu.SetActive (false);
+			pauseButton.SetActive (false);
+			exitButton.SetActive (false);
+			Time.timeScale = 1.0F;
+		}
+
+		public void exitGame ()
+		{
+			Application.Quit ();
+		}
+
 		//This function is called when the behaviour becomes disabled or inactive.
 		private void OnDisable ()
 		{
@@ -204,7 +243,7 @@ namespace Completed
 
 				} else if (move == RANGED){
 					//set animation to ranged attack
-					//animator.SetTrigger ("playerRangedAttack");
+					animator.SetTrigger ("playerChop");
 
 					//call ranged attack method
 					RangedAttack (0,1);
@@ -221,49 +260,46 @@ namespace Completed
 
 		private void Update ()
 		{		
-			
-			//This makes sure you cant add to the q until prepPhase.
-			prepPhase = GameManager.instance.prepPhase;
+			//This makes sure you cant add to the q until prepPhase is over or when paused.
+			if (paused) {
+				return;
+			}
+
 			//enqueue the appropriate direction
 			int count = moves.Count;
-			if (count < maxMoves && prepPhase) {
+			if (count < maxMoves && GameManager.instance.prepPhase) {
 				
 				if (Input.GetKeyDown (upKey)) {
 					moves.Enqueue (UP);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],UP);
+					moveBarQ.Enqueue (moveBar [count]);
+					setMove (moveBar [count], UP);
 					incCooldowns ();
 					//Debug.Log ("UP Queued");
-				} 
-				else if (Input.GetKeyDown (leftKey)) {
+				} else if (Input.GetKeyDown (leftKey)) {
 					moves.Enqueue (LEFT);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],LEFT);
+					moveBarQ.Enqueue (moveBar [count]);
+					setMove (moveBar [count], LEFT);
 					incCooldowns ();
 					//Debug.Log ("LEFT Queued");
-				}
-				else if (Input.GetKeyDown (downKey)) {
+				} else if (Input.GetKeyDown (downKey)) {
 					moves.Enqueue (DOWN);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],DOWN);
+					moveBarQ.Enqueue (moveBar [count]);
+					setMove (moveBar [count], DOWN);
 					incCooldowns ();
 					//Debug.Log ("DOWN Queued");
-				} 
-				else if (Input.GetKeyDown (rightKey)) {
+				} else if (Input.GetKeyDown (rightKey)) {
 					moves.Enqueue (RIGHT);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],RIGHT);
+					moveBarQ.Enqueue (moveBar [count]);
+					setMove (moveBar [count], RIGHT);
 					incCooldowns ();
 					//Debug.Log ("RIGHT Queued");
-				}
-				else if (Input.GetKeyDown (meleeKey)) {
+				} else if (Input.GetKeyDown (meleeKey)) {
 					moves.Enqueue (ATTACK);
-					moveBarQ.Enqueue (moveBar[count]);
-					setMove(moveBar[count],ATTACK);
+					moveBarQ.Enqueue (moveBar [count]);
+					setMove (moveBar [count], ATTACK);
 					incCooldowns ();
 					//Debug.Log ("melee attack Queued");
-				}
-				else if (Input.GetKeyDown (rangeKey)) {
+				} else if (Input.GetKeyDown (rangeKey)) {
 					if (canRanged ()) {
 						moves.Enqueue (RANGED);
 						moveBarQ.Enqueue (moveBar [count]);
@@ -273,16 +309,16 @@ namespace Completed
 						//reset ranged attack cooldown
 						rangedMoveCooldown = 0;
 						//update energy bar
-						manaBar.fillAmount = rangedMoveCooldown/3F;
+						manaBar.fillAmount = rangedMoveCooldown / 3F;
 						//Debug.Log ("Ranged Attacked Queued");
 					} else {
 						alertText.text = "Need More Energy!";
 						Debug.Log ("Ranged Attacked on cooldown");
 					}
-				}
-
+				} 
 			}
 		}
+			
 
 		//increment all cooldowns
 		protected void incCooldowns ()
@@ -419,7 +455,7 @@ namespace Completed
 			//Set the attack trigger of the player's animation controller in order to play the player's attack animation.
 			animator.SetTrigger ("playerChop");
 		}
-		
+
 		
 		//OnTriggerEnter2D is sent when another object enters a trigger collider attached to this object (2D physics only).
 		private void OnTriggerEnter2D (Collider2D other)
@@ -428,15 +464,18 @@ namespace Completed
 			if(other.tag == "Exit")
 			{
 				// add if statement to check if enemies are killed 
+				if (!GameManager.instance.anyActiveEnemies()) {
+					onExit = true;
 
-				onExit = true;
+					//Invoke the Restart function to start the next level with a delay of restartLevelDelay (default 1 second).
+					Invoke ("Restart", restartLevelDelay);
 
-				//Invoke the Restart function to start the next level with a delay of restartLevelDelay (default 1 second).
-				Invoke ("Restart", restartLevelDelay);
-
-				GameManager.instance.setup();
-				//Disable the player object since level is over.
-				enabled = false;
+					GameManager.instance.setup ();
+					//Disable the player object since level is over.
+					enabled = false;
+				}else{
+					alertText.text = "Kill all enemies before advancing!";
+				}
 			}
 			
 			//Check if the tag of the trigger collided with is Food.
@@ -477,7 +516,7 @@ namespace Completed
 			}
 
 			//health icon
-			healthIcon.fillAmount = food/100F;
+			healthIcon.fillAmount = food/maxHealth;
 
 
 		}
@@ -502,7 +541,7 @@ namespace Completed
 			food -= loss;
 
 			//health icon
-			healthIcon.fillAmount = food/100F;
+			healthIcon.fillAmount = food/maxHealth;
 
 			
 			//Check to see if game has ended.

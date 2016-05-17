@@ -6,7 +6,7 @@ namespace Completed
 	//The abstract keyword enables you to create classes and class members that are incomplete and must be implemented in a derived class.
 	public abstract class MovingObject : MonoBehaviour
 	{
-		public float moveTime = 0.1f;			//Time it will take object to move, in seconds.
+		public float moveTime = 0.2f;			//Time it will take object to move, in seconds.
 		public LayerMask blockingLayer;			//Layer on which collision will be checked.
 
 		

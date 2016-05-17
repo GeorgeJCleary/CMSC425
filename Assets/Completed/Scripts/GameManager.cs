@@ -25,6 +25,7 @@ namespace Completed
 
 		private bool firstTurn = true;							// true if first turn
 
+
 		private Text levelText;									//Text to display current level number.
 		private GameObject levelImage;							//Image to block out level as levels are being set up, background for levelText.
 		private BoardManager boardScript;						//Store a reference to our BoardManager which will set up the level.
@@ -34,7 +35,7 @@ namespace Completed
 		private Text alertText;
 		private Player player;
 		// debugging this
-		private int level = 4;									//Current level number, expressed in game as "Day 1".
+		private int level = 1;									//Current level number, expressed in game as "Day 1".
 
 		public List<MovingObject> enemies;							//List of all Enemy units, used to issue them move commands.
 
@@ -138,8 +139,8 @@ namespace Completed
 				//move player
 				player.move ();
 
-
-				StartCoroutine("MoveEnemies");
+				Invoke ("startEnemyMoves", 0.2F);
+				//StartCoroutine("MoveEnemies");
 				yield return new WaitForSeconds (1.0F);
 			}
 
@@ -148,6 +149,10 @@ namespace Completed
 			prepPhase = true;
 
 		}
+		private void startEnemyMoves (){
+			StartCoroutine("MoveEnemies");
+		}
+
 
 		private void cleanProjectiles (){
 			for (int i = 0; i < bullets.Count; i++)
@@ -243,7 +248,17 @@ namespace Completed
 
 
 		}
-		
+
+		public bool anyActiveEnemies ()
+		{
+			for (int i = 0; i < enemies.Count; i++) {
+
+				if (enemies [i].isActiveAndEnabled) {
+					return true;
+				}
+			}
+			return false;
+		}
 		
 		//Hides black image used between levels
 		void HideLevelImage()
@@ -257,10 +272,15 @@ namespace Completed
 			prepPhase = true;
 
 		}
-		
+			
 		//Update is called every frame.
 		void Update()
 		{
+			if (!player.paused && Input.GetKeyDown (player.pauseKey)) {
+
+				player.pauseGame ();
+
+			}
 			//set gameobjects in the ui to visible after setup is done for the first time for the level
 			if (leveltracker != level) {
 				
@@ -382,11 +402,17 @@ namespace Completed
 		public void GameOver()
 		{
 			//Set levelText to display number of levels passed and game over message
-			levelText.text = "You made it to " + level + " \nbefore you died.";
+			if (level == 1) {
+				levelText.text = "You made it " + level + " floor\ndeep before you died.";
+			} else {
+				levelText.text = "You made it " + level + " floors\ndeep before you died.";
+			}
 			
 			//Enable black background image gameObject.
 			levelImage.SetActive(true);
 
+			hideUI ();
+			player.showClose ();
 
 			//Disable this GameManager.
 			enabled = false;
@@ -420,12 +446,14 @@ namespace Completed
 			{
 				Projectile p = bullet [i].GetComponent<Projectile> ();
 				//Debug.Log("print bullet array: "+ bullets.);
-				float temp = p.moveTime;
+				if (p != null) {
+					float temp = p.moveTime;
 
-				p.MoveBullet ();
+					p.MoveBullet ();
 
-				//Wait for Enemy's moveTime before moving next Enemy, 
-				yield return new WaitForSeconds(temp);
+					//Wait for Enemy's moveTime before moving next Enemy, 
+					yield return new WaitForSeconds (temp);
+				}
 
 			}
 

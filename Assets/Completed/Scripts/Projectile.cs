@@ -9,8 +9,8 @@ namespace Completed
 		public int playerDamage; 							//The amount of food points to subtract from the player when attacking.
 		public AudioClip attackSound1;						//First of two audio clips to play when attacking the player.
 
-		private Animator animator;							//Variable of type Animator to store a reference to the enemy's Animator component.
-		private Transform target;							//Transform to attempt to move toward each turn.
+		//private Animator animator;							//Variable of type Animator to store a reference to the enemy's Animator component.
+		//private Transform target;							//Transform to attempt to move toward each turn.
 
 		int xDir = 0;
 		int yDir = 1;
@@ -23,10 +23,10 @@ namespace Completed
 			GameManager.instance.SendMessage("AddBulletToList", (this));
 
 			//Get and store a reference to the attached Animator component.
-			animator = GetComponent<Animator> ();
+			//animator = GetComponent<Animator> ();
 
 			//Find the Player GameObject using it's tag and store a reference to its transform component.
-			target = GameObject.FindGameObjectWithTag ("Player").transform;
+			//target = GameObject.FindGameObjectWithTag ("Player").transform;
 
 			//Call the start function of our base class MovingObject.
 			base.Start ();
@@ -104,6 +104,9 @@ namespace Completed
 		//and takes a generic parameter T which we use to pass in the component we expect to encounter, in this case Player
 		protected override void OnCantMove <T> (T component)
 		{
+			Player p =  component as Player;
+			//Call the LoseFood function of hitPlayer passing it playerDamage, the amount of foodpoints to be subtracted.
+			p.LoseFood (playerDamage);
 			Debug.Log("error?");
 			this.gameObject.SetActive (false);
 			//Destroy (this.gameObject);
