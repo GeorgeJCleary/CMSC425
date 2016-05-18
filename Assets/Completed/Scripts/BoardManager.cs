@@ -29,7 +29,7 @@ namespace Completed
 		public int columns = 8; 										//Number of columns in our game board.
 		public int rows = 8;											//Number of rows in our game board.
 		public Count wallCount = new Count (5, 9);						//Lower and upper limit for our random number of walls per level.
-		public Count foodCount = new Count (1, 4);						//Lower and upper limit for our random number of food items per level.
+		public Count foodCount = new Count (1, 3);						//Lower and upper limit for our random number of food items per level.
 		public GameObject exit;											//Prefab to spawn for exit.
 		public GameObject[] floorTiles;									//Array of floor prefabs.
 		public GameObject[] wallTiles;									//Array of wall prefabs.
@@ -48,13 +48,18 @@ namespace Completed
 			gridPositions.Clear ();
 			
 			//Loop through x axis (columns).
-			for(int x = 1; x < columns-1; x++)
+			for(int x = 0; x < columns; x++)
 			{
 				//Within each column, loop through y axis (rows).
-				for(int y = 1; y < rows-1; y++)
+				for(int y = 0; y < rows; y++)
 				{
-					//At each index add a new Vector3 to our list with the x and y coordinates of that position.
-					gridPositions.Add (new Vector3(x, y, 0f));
+					//dont put it on the player or the exit
+					if ( (x == 0 && y == 0) || (x == columns-1 && y == rows-1) ) {
+						//dont put something there
+					}else{
+						//At each index add a new Vector3 to our list with the x and y coordinates of that position.
+						gridPositions.Add (new Vector3 (x, y, 0f));
+					}
 				}
 			}
 		}
@@ -157,6 +162,7 @@ namespace Completed
 			
 			//Instantiate a random number of food tiles based on minimum and maximum, at randomized positions.
 			LayoutObjectAtRandom (foodTiles, foodCount.minimum, foodCount.maximum);
+			//Debug.Log ( foodCount.maximum + " max potions.");
 			
 			//Determine number of enemies based on current level number, based on a logarithmic progression
 			int enemyCount = (int) level/2 + 1;

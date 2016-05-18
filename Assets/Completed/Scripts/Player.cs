@@ -125,10 +125,10 @@ namespace Completed
 
 				m.transform.SetParent( panel.transform, false); 
 
-				m.rectTransform.sizeDelta = new Vector2(55, 55);
+				m.rectTransform.sizeDelta = new Vector2(50, 50);
 				//m.rectTransform.anchoredPosition = Vector2.one;
 				m.transform.localScale = Vector2.one;
-				m.rectTransform.localPosition = new Vector2(65 + i*60, 20);
+				m.rectTransform.localPosition = new Vector2(60 + i*60, 20);
 
 
 				//m.rectTransform.sizeDelta = new Vector2(32, 32);

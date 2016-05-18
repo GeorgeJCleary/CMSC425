@@ -14,9 +14,9 @@ namespace Completed
 		private float firstTurnExtraTime = 2f;					// first Turn Extra Time for countdown timer of the first turn
 
 		private float levelStartDelay = 2f;						//Time to wait before starting level, in seconds.
-		private int maxMoves = 5;								//Maximum number of moves
+		private int maxMoves = 6;								//Maximum number of moves
 		public float turnDelay = 0.1f;							//Delay between each Player turn.
-		private float prepInteval = 5f;							//Movement preparation interval in seconds	
+		private float prepInteval = 6f;							//Movement preparation interval in seconds	
 		public int playerFoodPoints = 100;						//Starting value for Player food points.
 
 

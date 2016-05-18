@@ -51,6 +51,7 @@ namespace Completed
 				if (skipShoot) {
 					skipShoot = false;
 				} else {
+					animator.SetTrigger ("enemyAttack");
 					Attack ();
 					skipShoot = true;
 				}
